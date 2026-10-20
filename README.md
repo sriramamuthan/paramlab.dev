@@ -5,7 +5,7 @@ ParamLab: change one thing, see what happens. Home of two series:
 - **Post-Mortem Lab** (`/lab`): engineering failures rebuilt so you can break them yourself
 - **Show Me Why** (`/explore`): science and maths explained visually with code
 
-Built with [Astro](https://astro.build) and MDX. Deployed on Cloudflare Pages.
+Built with [Astro](https://astro.build) and MDX. Deployed as static assets on Cloudflare Workers (`wrangler.jsonc`) on every push to `main`.
 
 ## Develop
 
