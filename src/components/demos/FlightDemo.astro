@@ -1,0 +1,282 @@
+---
+// Ariane 5 flight 501, the full chain: BH overflow → both SRIs down → OBC flies on diagnostic data → breakup.
+// Runs the lab's own simulation (src/lab/ariane-5.ts, synced from postmortem-lab).
+---
+
+<flight-demo class="demo panel">
+  <div class="head">
+    <span class="label"><span class="tag">Fig. 02</span> Flight 501 · H0 − 3 s to H0 + 45 s</span>
+    <span class="label" data-outcome></span>
+  </div>
+
+  <div class="controls">
+    <fieldset class="launcher">
+      <legend class="label">Launcher</legend>
+      <label><input type="radio" name="launcher" value="5" checked /> Ariane 5</label>
+      <label><input type="radio" name="launcher" value="4" /> Ariane 4</label>
+    </fieldset>
+    <fieldset class="fixes">
+      <legend class="label">Fixes</legend>
+      <label><input type="checkbox" value="protectConversion" /> Protect the BH conversion</label>
+      <label><input type="checkbox" value="stopAlignmentAtLiftOff" /> Alignment off at lift-off (R1)</label>
+      <label><input type="checkbox" value="bestEffortData" /> Keep sending best-effort data (R3)</label>
+    </fieldset>
+  </div>
+
+  <div class="clock">
+    <button type="button" class="run" data-run>▶ Launch</button>
+    <input type="range" min="0" max="1000" value="0" step="1" aria-label="Flight time" data-scrub />
+    <span class="t" data-clock>H0 − 3.0 s</span>
+  </div>
+
+  <div class="board">
+    <figure class="chart">
+      <figcaption class="label">BH, horizontal bias (64-bit float) vs int16 limit</figcaption>
+      <svg viewBox="0 0 320 140" preserveAspectRatio="none" data-chart>
+        <line class="limit" x1="0" x2="320" y1="40" y2="40" />
+        <text class="limit-label" x="4" y="34">32,767</text>
+        <line class="liftoff" x1="0" x2="0" y1="0" y2="140" data-liftoff />
+        <polyline class="trace" points="" data-trace />
+        <line class="cursor" x1="0" x2="0" y1="0" y2="140" data-cursor />
+      </svg>
+    </figure>
+
+    <div class="units">
+      <div class="unit" data-unit="SRI 2"><span class="lamp"></span><b>SRI 2</b><span class="role" data-role="SRI 2"></span></div>
+      <div class="unit" data-unit="SRI 1"><span class="lamp"></span><b>SRI 1</b><span class="role" data-role="SRI 1"></span></div>
+      <div class="aoa">
+        <span class="label">Angle of attack</span>
+        <div class="bar"><span data-aoa></span><i style="left: 100%"></i></div>
+        <span class="v" data-aoa-text>0°</span>
+      </div>
+    </div>
+
+    <svg class="rocket" viewBox="-40 -60 80 120" aria-hidden="true" data-rocket>
+      <g fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round">
+        <path d="M-6 -40 Q-6 -52 0 -56 Q6 -52 6 -40 V40 H-6 Z" />
+        <path d="M-16 -8 L-12 -16 L-8 -8 V44 H-16 Z M8 -8 L12 -16 L16 -8 V44 H8 Z" />
+      </g>
+    </svg>
+  </div>
+
+  <ol class="log" data-log aria-live="polite"></ol>
+</flight-demo>
+
+<script>
+  import { ARIANE_4, ARIANE_5, FLIGHT_MODE_START, LIFT_OFF, BREAKUP_ANGLE, fly, type Fixes, type FlightResult } from '../../lab/ariane-5.ts';
+
+  const T0 = FLIGHT_MODE_START;
+  const T1 = 45;
+  const LIMIT = 32767;
+  const Y_MAX = LIMIT * 1.4; // chart headroom above the limit
+  const fmt = (t: number, digits = 1) => `H0 ${t < 0 ? '−' : '+'} ${Math.abs(t).toFixed(digits)} s`;
+
+  class FlightDemo extends HTMLElement {
+    connectedCallback() {
+      const $ = <T extends Element>(sel: string) => this.querySelector<T>(sel)!;
+      const scrub = $<HTMLInputElement>('[data-scrub]');
+      const run = $<HTMLButtonElement>('[data-run]');
+      const trace = $<SVGPolylineElement>('[data-trace]');
+      const cursor = $<SVGLineElement>('[data-cursor]');
+      const log = $<HTMLOListElement>('[data-log]');
+      const x = (t: number) => ((t - T0) / (T1 - T0)) * 320;
+      const y = (bh: number) => 140 - (Math.min(bh, Y_MAX) / Y_MAX) * 140;
+      $<SVGLineElement>('[data-liftoff]').setAttribute('x1', String(x(LIFT_OFF)));
+      $<SVGLineElement>('[data-liftoff]').setAttribute('x2', String(x(LIFT_OFF)));
+      $<SVGLineElement>('.limit').setAttribute('y1', String(y(LIMIT)));
+      $<SVGLineElement>('.limit').setAttribute('y2', String(y(LIMIT)));
+
+      let flight: FlightResult;
+      let timer = 0;
+
+      const simulate = () => {
+        const launcher = $<HTMLInputElement>('[name=launcher]:checked').value === '4' ? ARIANE_4 : ARIANE_5;
+        const fixes: Fixes = {};
+        this.querySelectorAll<HTMLInputElement>('.fixes input:checked').forEach((c) => (fixes[c.value as keyof Fixes] = true));
+        flight = fly(launcher, fixes);
+        draw();
+      };
+
+      const draw = () => {
+        const end = flight.samples.at(-1)!.t;
+        const t = T0 + (Number(scrub.value) / 1000) * (T1 - T0);
+        const now = Math.min(t, end);
+        const shown = flight.samples.filter((s) => s.t <= now);
+        const s = shown.at(-1) ?? flight.samples[0]!;
+
+        trace.setAttribute('points', shown.map((p) => `${x(p.t).toFixed(1)},${y(p.bh).toFixed(1)}`).join(' '));
+        cursor.setAttribute('x1', String(x(now)));
+        cursor.setAttribute('x2', String(x(now)));
+        this.toggleAttribute('data-over', shown.some((p) => p.bh > LIMIT));
+
+        $('[data-clock]').textContent = fmt(now);
+        for (const name of ['SRI 1', 'SRI 2'] as const) {
+          const failed = (name === 'SRI 1' ? s.sri1 : s.sri2) === 'failed';
+          this.querySelector(`[data-unit="${name}"]`)!.toggleAttribute('data-failed', failed);
+          $(`[data-role="${name}"]`).textContent = `${s.active === name ? 'active' : 'standby'} · ${failed ? 'shut down' : 'ok'}`;
+        }
+        const aoa = Math.min(s.angleOfAttack, BREAKUP_ANGLE * 1.2);
+        $<HTMLElement>('[data-aoa]').style.width = `${(aoa / (BREAKUP_ANGLE * 1.2)) * 100}%`;
+        $('.aoa i').setAttribute('style', `left: ${(1 / 1.2) * 100}%`);
+        $('[data-aoa-text]').textContent = `${s.angleOfAttack.toFixed(1)}° / ${BREAKUP_ANGLE}°`;
+        $<SVGElement>('[data-rocket]').style.transform = `rotate(${Math.min(s.angleOfAttack * 2, 70)}deg)`;
+
+        const lost = flight.breakupAt !== undefined && now >= flight.breakupAt;
+        this.toggleAttribute('data-lost', lost);
+        const done = now >= Math.min(end, T1) - 0.001;
+        $('[data-outcome]').textContent = lost ? '■ Vehicle lost' : done ? '● Nominal flight' : '● In flight';
+
+        log.replaceChildren(
+          ...flight.events
+            .filter((e) => e.t <= now)
+            .slice(-5)
+            .map((e) => {
+              const li = document.createElement('li');
+              li.innerHTML = `<span>${fmt(e.t, 2)}</span> <b>${e.source}</b> `;
+              li.append(e.message);
+              return li;
+            }),
+        );
+        if (!log.children.length) {
+          const li = document.createElement('li');
+          li.textContent = now > T0 + 0.1
+            ? `${fmt(now)}: no faults so far. BH is ${Math.round(s.bh).toLocaleString('en-US')} of 32,767.`
+            : `Press Launch, or drag the timeline. Lift-off is at ${fmt(LIFT_OFF)}.`;
+          log.append(li);
+        }
+      };
+
+      const stop = () => {
+        cancelAnimationFrame(timer);
+        timer = 0;
+        run.textContent = '▶ Launch';
+      };
+
+      run.addEventListener('click', () => {
+        if (timer) return stop();
+        if (Number(scrub.value) >= 1000 || this.hasAttribute('data-lost')) scrub.value = '0';
+        run.textContent = '■ Stop';
+        let last = performance.now();
+        const tick = (nowMs: number) => {
+          // 48 s of flight in about 12 s.
+          scrub.value = String(Math.min(1000, Number(scrub.value) + ((nowMs - last) / 12000) * 1000));
+          last = nowMs;
+          draw();
+          const end = flight.samples.at(-1)!.t;
+          const t = T0 + (Number(scrub.value) / 1000) * (T1 - T0);
+          if (Number(scrub.value) >= 1000 || t >= end) return stop();
+          timer = requestAnimationFrame(tick);
+        };
+        timer = requestAnimationFrame(tick);
+      });
+
+      scrub.addEventListener('input', () => {
+        stop();
+        draw();
+      });
+      this.querySelectorAll('input:not([data-scrub])').forEach((i) => i.addEventListener('change', () => {
+        stop();
+        simulate();
+      }));
+      simulate();
+    }
+  }
+  customElements.define('flight-demo', FlightDemo);
+</script>
+
+<style>
+  flight-demo {
+    display: block;
+    margin: 2rem 0;
+    padding: 1.1rem 1.2rem 1.2rem;
+    --state: var(--explore);
+  }
+  flight-demo[data-over] .trace { stroke: var(--lab); }
+  flight-demo[data-lost] { --state: var(--lab); border-color: color-mix(in srgb, var(--lab) 50%, var(--rule)); }
+  .head { display: flex; justify-content: space-between; gap: 0.5rem 1rem; flex-wrap: wrap; }
+  .head [data-outcome] { color: var(--state); }
+  .tag { color: var(--lab); margin-right: 0.4rem; }
+
+  .controls { display: flex; flex-wrap: wrap; gap: 0.8rem 2rem; margin: 1rem 0; }
+  fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 0.3rem; }
+  .launcher { grid-auto-flow: column; grid-template-rows: auto auto; justify-content: start; gap: 0.3rem 1rem; }
+  .launcher legend { grid-column: 1 / -1; }
+  legend { padding: 0; margin-bottom: 0.3rem; }
+  fieldset label { font-size: 0.92rem; display: flex; gap: 0.45rem; align-items: center; }
+  input[type='radio'], input[type='checkbox'] { accent-color: var(--ink); }
+
+  .clock { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+  .run {
+    padding: 0.5rem 0.9rem;
+    font: 500 0.74rem var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--bg);
+    border: 0;
+    cursor: pointer;
+  }
+  .run:hover { background: var(--lab); color: #fff; }
+  .clock input { flex: 1; min-width: 8rem; accent-color: var(--state); }
+  .t { font: 600 1.05rem var(--font-mono); font-variant-numeric: tabular-nums; min-width: 8.5em; text-align: right; }
+
+  .board {
+    display: grid;
+    grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr) 4.5rem;
+    gap: 1rem;
+    align-items: center;
+    margin: 1rem 0 0.8rem;
+  }
+  @media (max-width: 640px) {
+    .board { grid-template-columns: minmax(0, 1fr) 3.5rem; }
+    .chart { grid-column: 1 / -1; }
+  }
+  .chart { margin: 0; }
+  .chart svg { display: block; width: 100%; height: 9rem; border: 1px solid var(--rule); background: var(--bg); margin-top: 0.4rem; }
+  .limit { stroke: var(--lab); stroke-dasharray: 4 4; vector-effect: non-scaling-stroke; }
+  .limit-label { fill: var(--lab); font: 500 9px var(--font-mono); }
+  .liftoff { stroke: var(--rule-strong); stroke-dasharray: 2 4; opacity: 0.4; vector-effect: non-scaling-stroke; }
+  .trace { fill: none; stroke: var(--explore); stroke-width: 2; vector-effect: non-scaling-stroke; }
+  .cursor { stroke: var(--muted); vector-effect: non-scaling-stroke; }
+
+  .units { display: grid; gap: 0.5rem; }
+  .unit {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.45rem 0.6rem;
+    border: 1px solid var(--rule);
+    background: var(--surface);
+    font-size: 0.9rem;
+  }
+  .unit b { font: 600 0.85rem var(--font-mono); }
+  .role { font: 500 0.7rem var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; text-align: right; }
+  .lamp { width: 0.65rem; height: 0.65rem; border-radius: 50%; background: var(--explore); }
+  .unit[data-failed] { border-color: var(--lab); }
+  .unit[data-failed] .lamp { background: var(--lab); }
+  .unit[data-failed] .role { color: var(--lab); }
+  .aoa { display: grid; gap: 0.3rem; margin-top: 0.2rem; }
+  .bar { position: relative; height: 0.55rem; background: var(--panel); }
+  .bar span { position: absolute; inset: 0 auto 0 0; background: var(--state); }
+  .bar i { position: absolute; top: -0.2rem; bottom: -0.2rem; width: 2px; background: var(--lab); }
+  .aoa .v { font: 600 0.85rem var(--font-mono); }
+
+  .rocket { width: 100%; height: 7rem; color: var(--ink); transition: transform 0.1s linear; }
+  flight-demo[data-lost] .rocket { color: var(--lab); }
+
+  .log {
+    list-style: none;
+    margin: 0;
+    padding: 0.6rem 0.8rem;
+    border-left: 3px solid var(--state);
+    background: var(--bg);
+    font-size: 0.88rem;
+    min-height: 7.5em;
+    display: grid;
+    align-content: start;
+    gap: 0.2rem;
+  }
+  .log :global(span) { font: 500 0.75rem var(--font-mono); color: var(--muted); }
+  .log :global(b) { font: 600 0.75rem var(--font-mono); }
+</style>

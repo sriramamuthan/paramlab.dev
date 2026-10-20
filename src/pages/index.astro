@@ -35,10 +35,10 @@ const shipped = ROADMAP.lab.filter((i) => i.status === 'published').length;
       <h2>A 16-bit integer destroyed a rocket.</h2>
       <p>
         Ariane 5 reused guidance code from Ariane 4. One value, the horizontal bias, was converted from a 64-bit float
-        into a 16-bit integer with no range check. Ariane 4 never flew fast enough to overflow it. Ariane 5 did, 37
-        seconds after launch.
+        into a 16-bit integer with no range check. Ariane 4 never flew fast enough to overflow it. Ariane 5 did, 36.7
+        seconds after ignition.
       </p>
-      <p class="muted">Drag the slider past 32,767. Episode 01 rebuilds the full flight software.</p>
+      <p class="muted">Drag the slider past 32,767. Then <a href="/lab/ep-01-ariane-5/">fly the whole flight in episode 01 →</a></p>
     </div>
     <OverflowDemo />
   </section>

@@ -68,7 +68,7 @@
         });
         this.toggleAttribute('data-failed', overflow);
         statusEl.textContent = overflow
-          ? `Operand Error. ${value.toFixed(0)} does not fit in 16 bits. The guidance computer shuts down, the backup already did the same, and the rocket breaks apart 37 seconds after launch.`
+          ? `Operand Error. ${value.toFixed(0)} does not fit in 16 bits. The guidance computer shuts down, the backup already did the same, and the rocket breaks apart 39 seconds after ignition.`
           : `Fits. int16 = ${Math.trunc(value).toLocaleString('en-US')}. This is the range Ariane 4 flew in, so the code was never tested beyond it.`;
       };
 

@@ -2,6 +2,7 @@
 // Standalone, shareable version of the Ariane 5 demo. Shared links carry ?v=<slider value>.
 import Base from '../../layouts/Base.astro';
 import OverflowDemo from '../../components/demos/OverflowDemo.astro';
+import FlightDemo from '../../components/demos/FlightDemo.astro';
 import Follow from '../../components/Follow.astro';
 import { SERIES } from '../../data/site';
 ---
@@ -16,13 +17,13 @@ import { SERIES } from '../../data/site';
     <h1>Crash Ariane 5 yourself.</h1>
     <p class="lede">
       Ariane 5’s guidance software converted a 64-bit value into a 16-bit integer with no range check. Ariane 4 never
-      flew fast enough to overflow it. Ariane 5 did, 37 seconds after launch. Find the number.
+      flew fast enough to overflow it. Ariane 5 did, 36.7 seconds after ignition. Find the number.
     </p>
     <OverflowDemo />
-    <p class="muted">
-      This is a teaser. The full episode rebuilds both guidance computers from the inquiry report.
-      <a href="/lab/">See the season →</a>
-    </p>
+    <h2>Now fly the whole thing.</h2>
+    <p>Both guidance computers, the flight computer and the fixes, from the inquiry board’s report.</p>
+    <FlightDemo />
+    <p class="muted"><a href="/lab/ep-01-ariane-5/">Read the full episode →</a></p>
     <Follow repo={SERIES.lab.repo} />
   </article>
 </Base>
