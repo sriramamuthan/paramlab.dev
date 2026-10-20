@@ -22,7 +22,7 @@ const code = series.id === 'lab' ? 'A' : 'B';
     {
       series.repo && (
         <p class="label repo">
-          Source <a href={`${SITE.github}${series.repo}`}>{SITE.github.replace('https://', '')}{series.repo}</a>
+          <a href={`${SITE.github}${series.repo}`}>Source code on GitHub →</a>
         </p>
       )
     }

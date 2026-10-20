@@ -42,7 +42,7 @@ const next = inSeries[i + 1];
               repoTag && series.repo ? (
                 <a href={`${SITE.github}${series.repo}/tree/${repoTag}`}>{repoTag}</a>
               ) : series.repo ? (
-                <a href={`${SITE.github}${series.repo}`}>{series.repo}</a>
+                <a href={`${SITE.github}${series.repo}`}>GitHub →</a>
               ) : (
                 '—'
               )
