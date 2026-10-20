@@ -3,6 +3,8 @@ import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import YouTube from '../../components/YouTube.astro';
 import Narration from '../../components/Narration.astro';
+import FurtherReading from '../../components/FurtherReading.astro';
+import Follow from '../../components/Follow.astro';
 import { SERIES, SITE } from '../../data/site';
 import { formatDate, getPosts, seriesOf, slugOf, urlOf, type Post } from '../../data/posts';
 
@@ -59,6 +61,9 @@ const next = inSeries[i + 1];
     <div class="prose">
       <Content />
     </div>
+
+    {post.data.reading.length > 0 && <FurtherReading items={post.data.reading} />}
+    <Follow repo={series.repo} />
 
     <nav class="pager" aria-label="More in this series">
       {prev ? <a href={urlOf(prev)}><span class="label">← Previous</span>{prev.data.title}</a> : <span />}

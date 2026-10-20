@@ -1,0 +1,43 @@
+---
+// End-of-post call to action: follow the build on GitHub.
+import { SITE } from '../data/site';
+
+interface Props {
+  repo?: string;
+}
+
+const { repo } = Astro.props;
+const href = repo ? `${SITE.github}${repo}` : SITE.github;
+---
+
+<aside class="follow panel">
+  <p class="label"><span class="hot">■ Follow the build</span></p>
+  <p>
+    Every episode ships as a tagged release with the code, the tests and the sources. Star the repo, or choose <strong>Watch → Custom → Releases</strong>
+    to hear about the next one.
+  </p>
+  <div class="actions">
+    <a class="btn primary" href={href}>Open on GitHub →</a>
+    <a class="btn" href="/rss.xml">RSS feed</a>
+  </div>
+</aside>
+
+<style>
+  .follow { margin-top: 3rem; padding: 1.1rem 1.2rem 1.2rem; }
+  .follow p { margin: 0 0 0.8rem; }
+  .label { margin-bottom: 0.6rem; }
+  .actions { display: flex; flex-wrap: wrap; gap: 0.6rem; }
+  .btn {
+    display: inline-block;
+    padding: 0.6rem 1rem;
+    font: 500 0.74rem var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    text-decoration: none;
+    border: 1px solid var(--rule-strong);
+    background: var(--surface);
+  }
+  .btn:hover { background: var(--panel); }
+  .btn.primary { background: var(--ink); color: var(--bg); }
+  .btn.primary:hover { background: var(--lab); border-color: var(--lab); color: #fff; }
+</style>

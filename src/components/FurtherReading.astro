@@ -1,0 +1,69 @@
+---
+// "Further reading" list at the end of a post, grouped by `group` when set.
+interface Item {
+  title: string;
+  url: string;
+  source: string;
+  kind: 'report' | 'paper' | 'article' | 'video';
+  group?: string;
+}
+interface Props {
+  items: Item[];
+}
+
+const { items } = Astro.props;
+const groups = [...new Set(items.map((i) => i.group ?? ''))].map((name) => ({
+  name,
+  items: items.filter((i) => (i.group ?? '') === name),
+}));
+const KIND = { report: 'Report', paper: 'Paper', article: 'Article', video: 'Video' };
+---
+
+<section class="reading" aria-labelledby="reading-title">
+  <div class="section-head"><span class="label">§</span><h2 id="reading-title">Further reading</h2></div>
+  <p class="intro">Primary sources first. Everything here is free to read or watch.</p>
+  {
+    groups.map((g) => (
+      <div class="group">
+        {g.name && <h3 class="label">{g.name}</h3>}
+        <ul>
+          {g.items.map((i) => (
+            <li>
+              <span class:list={['kind', i.kind]}>{KIND[i.kind]}</span>
+              <a href={i.url} rel="noopener">{i.title}</a>
+              <span class="src">{i.source}</span>
+            </li>
+          ))}
+        </ul>
+      </div>
+    ))
+  }
+</section>
+
+<style>
+  .reading { margin-top: 3.5rem; }
+  .intro { color: var(--muted); margin: 0 0 1.2rem; }
+  .group { margin-bottom: 1.4rem; }
+  h3 { margin: 0 0 0.4rem; }
+  ul { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+  li {
+    display: grid;
+    grid-template-columns: 5.5rem minmax(0, 1fr);
+    gap: 0.1rem 0.8rem;
+    padding: 0.6rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .kind {
+    grid-row: span 2;
+    align-self: start;
+    font: 500 0.68rem var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    padding-top: 0.2rem;
+  }
+  .kind.report { color: var(--lab); }
+  .kind.video { color: var(--explore); }
+  a { font-weight: 600; text-wrap: pretty; }
+  .src { font-size: 0.86rem; color: var(--muted); }
+</style>

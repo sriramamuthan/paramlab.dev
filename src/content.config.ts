@@ -14,6 +14,18 @@ const posts = defineCollection({
     audio: z.string().optional(), // narration file under public/, e.g. /audio/ep-00.mp3
     repoTag: z.string().optional(), // git tag in the series repo this post covers
     tags: z.array(z.string()).default([]),
+    // Further reading for curious readers: official reports first, then papers, articles and videos.
+    reading: z
+      .array(
+        z.object({
+          title: z.string(),
+          url: z.url(),
+          source: z.string(), // who published it, e.g. "ESA" or "GOTO Conferences (YouTube)"
+          kind: z.enum(['report', 'paper', 'article', 'video']),
+          group: z.string().optional(), // optional heading, e.g. the incident name
+        }),
+      )
+      .default([]),
     draft: z.boolean().default(false),
   }),
 });

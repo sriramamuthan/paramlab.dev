@@ -28,6 +28,11 @@
   <div class="bits" data-bits aria-label="16-bit register"></div>
 
   <p class="status" data-status role="status" aria-live="polite"></p>
+
+  <div class="share">
+    <button type="button" class="label" data-share>Share this result →</button>
+    <span class="label" data-shared hidden>Link copied</span>
+  </div>
 </overflow-demo>
 
 <script>
@@ -39,6 +44,12 @@
       const floatEl = this.querySelector<HTMLElement>('[data-float]')!;
       const bitsEl = this.querySelector<HTMLElement>('[data-bits]')!;
       const statusEl = this.querySelector<HTMLElement>('[data-status]')!;
+      const shareBtn = this.querySelector<HTMLButtonElement>('[data-share]')!;
+      const sharedEl = this.querySelector<HTMLElement>('[data-shared]')!;
+
+      // A shared link carries the slider value, e.g. /play/ariane-5/?v=32768
+      const fromUrl = Number(new URLSearchParams(location.search).get('v'));
+      if (Number.isFinite(fromUrl) && fromUrl > 0) input.value = String(Math.min(fromUrl, Number(input.max)));
 
       bitsEl.replaceChildren(
         ...Array.from({ length: 16 }, () => document.createElement('span')),
@@ -47,9 +58,8 @@
       const render = () => {
         const value = Number(input.value) + 0.37; // a real reading is never a clean integer
         const overflow = value > INT16_MAX;
-        // What a wrapping conversion would leave in the register (C-style), for the bit display.
-        const wrapped = ((Math.trunc(value) + 32768) % 65536) - 32768;
-        const bits = (wrapped & 0xffff).toString(2).padStart(16, '0');
+        // Ada's checked conversion never writes a wrapped value: on overflow the register holds nothing valid.
+        const bits = overflow ? '?'.repeat(16) : Math.trunc(value).toString(2).padStart(16, '0');
 
         floatEl.textContent = value.toLocaleString('en-US', { maximumFractionDigits: 2 });
         [...bitsEl.children].forEach((b, i) => {
@@ -61,6 +71,24 @@
           ? `Operand Error. ${value.toFixed(0)} does not fit in 16 bits. The guidance computer shuts down, the backup already did the same, and the rocket breaks apart 37 seconds after launch.`
           : `Fits. int16 = ${Math.trunc(value).toLocaleString('en-US')}. This is the range Ariane 4 flew in, so the code was never tested beyond it.`;
       };
+
+      shareBtn.addEventListener('click', async () => {
+        const url = `${location.origin}/play/ariane-5/?v=${input.value}`;
+        const text = Number(input.value) > INT16_MAX
+          ? `I crashed Ariane 5 at ${Number(input.value).toLocaleString('en-US')}.`
+          : 'Can you find the number that crashed Ariane 5?';
+        try {
+          if (navigator.share && matchMedia('(pointer: coarse)').matches) {
+            await navigator.share({ title: 'Ariane 5 · ParamLab', text, url });
+          } else {
+            await navigator.clipboard.writeText(`${text} ${url}`);
+            sharedEl.hidden = false;
+            setTimeout(() => (sharedEl.hidden = true), 2000);
+          }
+        } catch {
+          // Share sheet dismissed, or clipboard blocked: nothing to do.
+        }
+      });
 
       input.addEventListener('input', render);
       render();
@@ -104,6 +132,16 @@
   }
   .bits :global(span:nth-child(8)) { box-shadow: 1px 0 0 var(--rule); }
   .bits :global(span.on) { background: var(--state); color: var(--on-accent); }
+  overflow-demo[data-failed] .bits :global(span) { color: var(--lab); background: color-mix(in srgb, var(--lab) 10%, var(--surface)); }
+  .share { display: flex; align-items: center; gap: 1rem; margin-top: 0.8rem; }
+  .share button {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--state);
+    cursor: pointer;
+  }
+  .share button:hover { text-decoration: underline; }
   .status {
     margin: 0;
     padding: 0.6rem 0.8rem;
