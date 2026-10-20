@@ -5,7 +5,7 @@
 
 <flight-demo class="demo panel">
   <div class="head">
-    <span class="label"><span class="tag">Fig. 02</span> Flight 501 · H0 − 3 s to H0 + 45 s</span>
+    <span class="label"><span class="tag">Fig. 02</span> Flight 501 · the first 45 seconds</span>
     <span class="label" data-outcome></span>
   </div>
 
@@ -17,21 +17,21 @@
     </fieldset>
     <fieldset class="fixes">
       <legend class="label">Fixes</legend>
-      <label><input type="checkbox" value="protectConversion" /> Protect the BH conversion</label>
-      <label><input type="checkbox" value="stopAlignmentAtLiftOff" /> Alignment off at lift-off (R1)</label>
-      <label><input type="checkbox" value="bestEffortData" /> Keep sending best-effort data (R3)</label>
+      <label><input type="checkbox" value="protectConversion" /> Check the number before converting it</label>
+      <label><input type="checkbox" value="stopAlignmentAtLiftOff" /> Switch off the unneeded code at lift-off</label>
+      <label><input type="checkbox" value="bestEffortData" /> On an error, keep guiding instead of shutting down</label>
     </fieldset>
   </div>
 
   <div class="clock">
     <button type="button" class="run" data-run>▶ Launch</button>
     <input type="range" min="0" max="1000" value="0" step="1" aria-label="Flight time" data-scrub />
-    <span class="t" data-clock>H0 − 3.0 s</span>
+    <span class="t"><span data-clock>−3.0 s</span><small>after ignition</small></span>
   </div>
 
   <div class="board">
     <figure class="chart">
-      <figcaption class="label">BH, horizontal bias (64-bit float) vs int16 limit</figcaption>
+      <figcaption class="label">Sideways-speed value (BH) vs the most 16 bits can hold</figcaption>
       <svg viewBox="0 0 320 140" preserveAspectRatio="none" data-chart>
         <line class="limit" x1="0" x2="320" y1="40" y2="40" />
         <text class="limit-label" x="4" y="34">32,767</text>
@@ -42,10 +42,10 @@
     </figure>
 
     <div class="units">
-      <div class="unit" data-unit="SRI 2"><span class="lamp"></span><b>SRI 2</b><span class="role" data-role="SRI 2"></span></div>
-      <div class="unit" data-unit="SRI 1"><span class="lamp"></span><b>SRI 1</b><span class="role" data-role="SRI 1"></span></div>
+      <div class="unit" data-unit="SRI 2"><span class="lamp"></span><b>Main computer</b><span class="role" data-role="SRI 2"></span></div>
+      <div class="unit" data-unit="SRI 1"><span class="lamp"></span><b>Backup computer</b><span class="role" data-role="SRI 1"></span></div>
       <div class="aoa">
-        <span class="label">Angle of attack</span>
+        <span class="label">Nose off course <span class="hint">· breaks up past 20°</span></span>
         <div class="bar"><span data-aoa></span><i style="left: 100%"></i></div>
         <span class="v" data-aoa-text>0°</span>
       </div>
@@ -69,7 +69,9 @@
   const T1 = 45;
   const LIMIT = 32767;
   const Y_MAX = LIMIT * 1.4; // chart headroom above the limit
-  const fmt = (t: number, digits = 1) => `H0 ${t < 0 ? '−' : '+'} ${Math.abs(t).toFixed(digits)} s`;
+  const fmt = (t: number, digits = 1) => `${t < 0 ? '−' : ''}${Math.abs(t).toFixed(digits)} s`;
+  // Plain names for the simulation's sources (the report's acronyms appear in the post's glossary).
+  const WHO: Record<string, string> = { 'SRI 1': 'Backup computer', 'SRI 2': 'Main computer', OBC: 'Flight computer', Launcher: 'Rocket' };
 
   class FlightDemo extends HTMLElement {
     connectedCallback() {
@@ -113,7 +115,7 @@
         for (const name of ['SRI 1', 'SRI 2'] as const) {
           const failed = (name === 'SRI 1' ? s.sri1 : s.sri2) === 'failed';
           this.querySelector(`[data-unit="${name}"]`)!.toggleAttribute('data-failed', failed);
-          $(`[data-role="${name}"]`).textContent = `${s.active === name ? 'active' : 'standby'} · ${failed ? 'shut down' : 'ok'}`;
+          $(`[data-role="${name}"]`).textContent = failed ? 'shut down' : s.active === name ? 'guiding' : 'standing by';
         }
         const aoa = Math.min(s.angleOfAttack, BREAKUP_ANGLE * 1.2);
         $<HTMLElement>('[data-aoa]').style.width = `${(aoa / (BREAKUP_ANGLE * 1.2)) * 100}%`;
@@ -132,7 +134,7 @@
             .slice(-5)
             .map((e) => {
               const li = document.createElement('li');
-              li.innerHTML = `<span>${fmt(e.t, 2)}</span> <b>${e.source}</b> `;
+              li.innerHTML = `<span>${fmt(e.t, 2)}</span> <b>${WHO[e.source] ?? e.source}</b> `;
               li.append(e.message);
               return li;
             }),
@@ -140,8 +142,8 @@
         if (!log.children.length) {
           const li = document.createElement('li');
           li.textContent = now > T0 + 0.1
-            ? `${fmt(now)}: no faults so far. BH is ${Math.round(s.bh).toLocaleString('en-US')} of 32,767.`
-            : `Press Launch, or drag the timeline. Lift-off is at ${fmt(LIFT_OFF)}.`;
+            ? `${fmt(now)}: all fine. The sideways-speed value is ${Math.round(s.bh).toLocaleString('en-US')} of a possible 32,767.`
+            : `Press Launch, or drag the timeline. Engines ignite at 0 s; lift-off is about ${fmt(LIFT_OFF, 0)} later.`;
           log.append(li);
         }
       };
@@ -218,7 +220,9 @@
   }
   .run:hover { background: var(--lab); color: #fff; }
   .clock input { flex: 1; min-width: 8rem; accent-color: var(--state); }
-  .t { font: 600 1.05rem var(--font-mono); font-variant-numeric: tabular-nums; min-width: 8.5em; text-align: right; }
+  .t { font: 600 1.05rem var(--font-mono); font-variant-numeric: tabular-nums; min-width: 6.5em; text-align: right; display: grid; }
+  .t small { font: 500 0.66rem var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+  .hint { text-transform: none; letter-spacing: 0; }
 
   .board {
     display: grid;

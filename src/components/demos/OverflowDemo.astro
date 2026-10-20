@@ -5,22 +5,22 @@
 
 <overflow-demo class="demo panel">
   <div class="head">
-    <span class="label"><span class="tag">Fig. 01</span> Ariane 5 · 1996 · int16 register</span>
+    <span class="label"><span class="tag">Fig. 01</span> Ariane 5 · 1996 · a 16-bit box</span>
     <span class="label">Drag the slider</span>
   </div>
 
   <label class="control">
-    <span class="label">Horizontal bias · 64-bit float</span>
+    <span class="label">Sideways-speed value</span>
     <input type="range" min="0" max="60000" step="1" value="20000" />
   </label>
 
   <div class="readout">
     <div>
-      <span class="k">float64</span>
+      <span class="k">The number</span>
       <span class="v" data-float></span>
     </div>
     <div>
-      <span class="k">int16 limit</span>
+      <span class="k">Box holds up to</span>
       <span class="v">32,767</span>
     </div>
   </div>
@@ -68,8 +68,8 @@
         });
         this.toggleAttribute('data-failed', overflow);
         statusEl.textContent = overflow
-          ? `Operand Error. ${value.toFixed(0)} does not fit in 16 bits. The guidance computer shuts down, the backup already did the same, and the rocket breaks apart 39 seconds after ignition.`
-          : `Fits. int16 = ${Math.trunc(value).toLocaleString('en-US')}. This is the range Ariane 4 flew in, so the code was never tested beyond it.`;
+          ? `Operand Error: ${Math.round(value).toLocaleString('en-US')} doesn’t fit in 16 bits. The guidance computer shuts itself down. Its backup already did the same, and the rocket breaks apart 39 seconds after ignition.`
+          : `Fits: ${Math.round(value).toLocaleString('en-US')}. Ariane 4 never went beyond this kind of value, so the code was never tested beyond it.`;
       };
 
       shareBtn.addEventListener('click', async () => {

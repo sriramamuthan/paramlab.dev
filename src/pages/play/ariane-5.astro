@@ -16,8 +16,9 @@ import { SERIES } from '../../data/site';
     <p class="label"><span class="hot">Interactive</span> · Ariane 5 · 4 June 1996</p>
     <h1>Crash Ariane 5 yourself.</h1>
     <p class="lede">
-      Ariane 5’s guidance software converted a 64-bit value into a 16-bit integer with no range check. Ariane 4 never
-      flew fast enough to overflow it. Ariane 5 did, 36.7 seconds after ignition. Find the number.
+      Ariane 5’s guidance software squeezed a number based on the rocket’s sideways speed into a 16-bit box that holds
+      at most 32,767, without checking it fit. Ariane 4 never flew fast enough to overflow it. Ariane 5 did, 36.7
+      seconds after ignition. Find the number.
     </p>
     <OverflowDemo />
     <h2>Now fly the whole thing.</h2>

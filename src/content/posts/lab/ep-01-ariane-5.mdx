@@ -16,47 +16,64 @@ reading:
 import FlightDemo from '../../../components/demos/FlightDemo.astro';
 import Callout from '../../../components/Callout.astro';
 
-On 4 June 1996, Ariane 5 lifted off from Kourou on its first flight. It carried two inertial reference computers, the
-SRIs, that tell the rocket which way it is pointing. They were identical on purpose: if one failed, the other would
-take over.
+On 4 June 1996, Europe’s new Ariane 5 rocket lifted off on its first flight. On board were two identical guidance
+computers that tell the rocket which way it is pointing. One did the work; the other stood by, ready to take over if
+the first one broke.
 
-At 36.7 seconds after main engine ignition, the backup hit a number too big for a 16-bit integer and shut itself down.
-In the next data cycle the active one hit the same number and shut down too. At 39 seconds the rocket was breaking
-apart.
+36.7 seconds after the engines ignited, the backup computer met a number too big for the space it had to fit in, and
+shut itself down. A moment later the main computer met the same number and did the same. With no guidance left, the
+rocket steered itself off course, and at 39 seconds it broke apart.
 
-This episode rebuilds that chain as code. Everything below runs the same simulation that the
+This episode rebuilds that chain as code you can run. Everything below uses the same simulation the
 [episode’s tests](https://github.com/sriramamuthan/postmortem-lab/tree/main/incidents/01-ariane-5) check.
+
+<Callout type="note" title="Five terms you need">
+
+- **Guidance computer (SRI).** Measures which way the rocket points and how it moves. The report calls it the
+  *inertial reference system*, SRI in French. Ariane 5 had two: a main one and a backup.
+- **Flight computer (OBC).** Reads the guidance computer and steers the rocket by swivelling its engine nozzles.
+- **Sideways-speed value (BH).** A number the guidance computer worked out from how fast the rocket was moving
+  sideways. The report calls it the *horizontal bias*, BH.
+- **16-bit integer.** A whole-number box that holds at most 32,767. Putting a bigger number in it is an error; in the
+  language this software was written in, Ada, that error is called an *Operand Error*.
+- **Angle of attack.** How far the rocket’s nose points away from the direction it is actually flying. Past about 20°,
+  the air tears the rocket apart.
+
+</Callout>
 
 ## Fly it
 
-Press **Launch** with Ariane 5 selected. Then switch to Ariane 4 and launch again: same software, different rocket.
+Press **Launch** with Ariane 5 selected. Watch three things: the line climbing towards the red limit, the two
+computers on the right, and the log underneath. Then switch to Ariane 4 and launch again: same software, a slower
+rocket.
 
 <FlightDemo />
 
 ## What happened, in order
 
-Every step here comes from the inquiry board’s report.
+Every step comes from the official inquiry report.
 
-1. **The code was borrowed.** The SRI and its software were practically the same as on Ariane 4, which had flown
-   successfully for years.
-2. **One function should not have been running at all.** The alignment function only works before lift-off. On
-   Ariane 4 it kept running for about 40 seconds of flight, so a countdown on hold could restart quickly. Ariane 5
-   didn’t need that, but the code was kept for commonality.
-3. **It converted a number without checking it.** The function turned the *horizontal bias*, BH, from a 64-bit float
-   into a 16-bit signed integer, which holds at most 32,767. Seven conversions like this had been flagged as risky.
-   Four were protected. Three, including BH, were left unprotected to keep the computer under an 80% workload target,
-   on reasoning that “turned out to be faulty”.
-4. **Ariane 5 was faster.** Its horizontal velocity builds up five times faster than Ariane 4’s, so BH went past
-   32,767. The Ada code raised an *Operand Error*.
-5. **Both computers stopped.** The specification said any exception meant: report it, save the details, shut the
-   processor down. That makes sense for a random hardware fault, because the backup takes over. But both SRIs ran the
-   same software on the same data. The backup had already stopped one 72 ms cycle earlier.
-6. **The flight computer flew on garbage.** It read SRI 2’s diagnostic bit pattern as attitude data, saw a huge
-   deviation that wasn’t there, and swung the booster nozzles, then the main engine nozzle, to full deflection. The
-   angle of attack passed 20 degrees and the rocket broke up.
+1. **The software was borrowed.** Ariane 5’s guidance computers and their software were practically the same as
+   Ariane 4’s, which had flown successfully for years.
+2. **Some of it should not have been running.** One part of the software, the *alignment* routine, sets the
+   computer up while the rocket is still on the ground. It is useless once the rocket flies. On Ariane 4 it kept
+   running for about 40 seconds after lift-off, so a countdown that was put on hold could restart quickly. Ariane 5
+   didn’t need that, but the code was kept so both rockets used the same software.
+3. **It squeezed a number into a box without checking it.** This routine converted the sideways-speed value into a
+   16-bit integer. Engineers had found seven conversions like this that could overflow. Four got a check. Three,
+   including this one, didn’t, to keep the computer under 80% busy. The report says the reasoning that the number
+   could never get that big “turned out to be faulty”.
+4. **Ariane 5 was faster.** It builds up sideways speed five times faster than Ariane 4, so the value passed 32,767.
+   The conversion raised an Operand Error.
+5. **Both computers shut down.** The rule for any error was: report it, save the details, stop the computer. That
+   makes sense when a part breaks at random, because the backup takes over. But both computers ran the same
+   software on the same numbers. The backup had already stopped, a fraction of a second earlier.
+6. **The flight computer steered on nonsense.** Instead of directions, the main guidance computer was now sending an
+   error report. The flight computer read it as directions, saw a huge course error that wasn’t there, and swung the
+   nozzles fully to one side. The nose swung past 20° and the rocket broke up.
 
 <Callout type="lesson">
-A backup that runs the same code on the same inputs protects you from hardware faults, not from your own bugs. Both
+A backup that runs the same code on the same inputs protects you from broken parts, not from your own bugs. Both
 copies fail together.
 </Callout>
 
@@ -66,20 +83,20 @@ Tick each fix in the demo and launch again. Any one of them is enough.
 
 | Fix | Where it comes from | What changes |
 |---|---|---|
-| Protect the BH conversion | The other four variables already were | BH saturates at 32,767 instead of raising an error |
-| Switch alignment off at lift-off | Board recommendation R1 | The function never runs in flight, so BH is never computed |
-| Keep sending best-effort data | Board recommendation R3 | The error is handled and the SRI keeps flying |
+| Check the number before converting it | The other four conversions already did | The value stops at 32,767 instead of raising an error |
+| Switch off the unneeded code at lift-off | The report’s first recommendation | The routine never runs in flight, so the value is never computed |
+| On an error, keep guiding instead of shutting down | The report’s third recommendation | The error is handled and the computer keeps sending its best estimate |
 
-The board’s other key recommendation, R2, was to test the real equipment with the real trajectory. That is what the
-episode’s test file does: it flies Ariane 5’s trajectory through the SRI code and expects the failure, then checks
-each fix. Had a test like that run in 1996, the report says “the failure mechanism would have been exposed”.
+The report’s second recommendation was to test the real equipment with the real flight path. That is what this
+episode’s test file does: it flies Ariane 5’s path through the guidance code, expects the failure, then checks each
+fix. Had a test like that run in 1996, the report says, “the failure mechanism would have been exposed”.
 
 ## What I simplified
 
-The real BH values are in the board’s restricted technical report, so this simulation models BH from the time since
-lift-off. It’s calibrated to cross 32,767 at H0 + 36.7 s, and Ariane 4 builds up five times more slowly, as the report
-says. Lift-off at H0 + 7 s and the attitude response are tuned to reproduce the report’s timings. The order of events,
-the 72 ms cycle, the shared fault and the fixes are as documented.
+The real sideways-speed values are in the board’s restricted technical report, so this simulation models them from the
+time since lift-off. It’s calibrated to pass 32,767 at 36.7 seconds after ignition, with Ariane 4 building up five
+times more slowly, as the report says. The lift-off time and how fast the nose swings are tuned to match the report’s
+timings. The order of events, the shared fault and the fixes are as documented.
 
 <Callout type="try">
 Run it locally: `git clone` the repo, `git checkout ep-01`, `npm install`, `npm test`. Then break something: delete
