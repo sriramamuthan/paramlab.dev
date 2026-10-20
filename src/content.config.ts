@@ -11,7 +11,9 @@ const posts = defineCollection({
     date: z.coerce.date(),
     episode: z.number().int().nonnegative().optional(),
     youtube: z.string().optional(), // YouTube video id
-    audio: z.string().optional(), // narration file under public/, e.g. /audio/ep-00.mp3
+    video: z.string().optional(), // self-hosted episode video under public/, e.g. /video/ep-00.mp4
+    poster: z.string().optional(), // still shown before the video plays
+    audio: z.string().optional(), // narration file under public/, used when there is no video
     repoTag: z.string().optional(), // git tag in the series repo this post covers
     tags: z.array(z.string()).default([]),
     // Further reading for curious readers: official reports first, then papers, articles and videos.

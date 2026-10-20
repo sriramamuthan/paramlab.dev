@@ -3,6 +3,7 @@ import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import YouTube from '../../components/YouTube.astro';
 import Narration from '../../components/Narration.astro';
+import EpisodeVideo from '../../components/EpisodeVideo.astro';
 import FurtherReading from '../../components/FurtherReading.astro';
 import Follow from '../../components/Follow.astro';
 import { SERIES, SITE } from '../../data/site';
@@ -19,7 +20,7 @@ export async function getStaticPaths() {
 const { post } = Astro.props as { post: Post };
 const { Content } = await render(post);
 const series = SERIES[seriesOf(post)];
-const { title, description, date, episode, youtube, audio, repoTag } = post.data;
+const { title, description, date, episode, youtube, video, poster, audio, repoTag } = post.data;
 
 // Previous/next within the same series, by date.
 const inSeries = (await getPosts(series.id)).reverse();
@@ -56,7 +57,8 @@ const next = inSeries[i + 1];
     </header>
 
     {youtube && <YouTube id={youtube} title={title} />}
-    {audio && <Narration src={audio} />}
+    {video && <EpisodeVideo src={video} poster={poster} title={title} />}
+    {audio && !video && <Narration src={audio} />}
 
     <div class="prose">
       <Content />

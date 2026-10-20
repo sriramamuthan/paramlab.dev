@@ -1,7 +1,9 @@
-// Cloudflare deploy config. The site is fully static: `npm run build` writes dist/, and the Worker only serves those files.
+// Cloudflare deploy config. The site is static: `npm run build` writes dist/. A tiny Worker (worker/index.js) adds
+// range requests for video and audio; every other path is served straight from the static files.
 {
   "name": "paramlab-dev",
   "compatibility_date": "2026-06-01",
+  "main": "worker/index.js",
   // Attached on every deploy; Cloudflare creates the DNS records and certificates.
   "routes": [
     { "pattern": "paramlab.dev", "custom_domain": true },
@@ -9,6 +11,8 @@
   ],
   "assets": {
     "directory": "./dist",
-    "not_found_handling": "404-page"
+    "binding": "ASSETS",
+    "not_found_handling": "404-page",
+    "run_worker_first": ["/video/*", "/audio/*"]
   }
 }

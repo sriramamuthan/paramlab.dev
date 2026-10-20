@@ -1,0 +1,24 @@
+---
+// Self-hosted episode video. Served with range support by worker/index.js so it plays and seeks on iPhone.
+interface Props {
+  src: string;
+  poster?: string | undefined;
+  title: string;
+}
+
+const { src, poster, title } = Astro.props;
+---
+
+<figure class="episode-video panel">
+  <p class="label"><span class="hot">▶ Watch</span> · the episode</p>
+  <video controls playsinline preload="metadata" poster={poster} aria-label={title}>
+    <source src={src} type="video/mp4" />
+    <a href={src}>Download the video</a>
+  </video>
+</figure>
+
+<style>
+  .episode-video { margin: 0 0 2rem; padding: 0.9rem 1rem 1rem; }
+  .label { margin: 0 0 0.6rem; }
+  video { display: block; width: 100%; aspect-ratio: 16 / 9; background: var(--panel); }
+</style>
