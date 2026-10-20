@@ -1,59 +1,75 @@
 ---
 import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
-import SignalScope from '../components/SignalScope.astro';
+import Roadmap from '../components/Roadmap.astro';
+import OverflowDemo from '../components/demos/OverflowDemo.astro';
 import { SERIES } from '../data/site';
+import { ROADMAP } from '../data/roadmap';
 import { getPosts } from '../data/posts';
 
-const posts = (await getPosts()).slice(0, 6);
-const counts = {
-  lab: (await getPosts('lab')).length,
-  explore: (await getPosts('explore')).length,
-};
-const modules = [
-  { ...SERIES.lab, code: 'A', status: counts.lab ? `${counts.lab} ${counts.lab === 1 ? 'episode' : 'episodes'}` : 'In development' },
-  { ...SERIES.explore, code: 'B', status: counts.explore ? `${counts.explore} explainers` : 'In development' },
-];
+const posts = (await getPosts()).slice(0, 5);
+const shipped = ROADMAP.lab.filter((i) => i.status === 'published').length;
 ---
 
 <Base>
   <section class="wrap hero">
-    <div class="copy">
-      <p class="label"><span class="hot" style="color: var(--lab)">■</span> paramlab · building in public</p>
-      <h1>Change one thing.<br />See what happens.</h1>
-      <p class="lede">
-        Every system has one parameter that matters more than the rest. Here we find it, push it, and watch what
-        breaks. Famous engineering failures you can cause yourself, and science and maths you can poke at until it
-        clicks.
-      </p>
+    <p class="label"><span style="color: var(--lab)">■</span> ParamLab · Season 1 · {shipped} of {ROADMAP.lab.length} shipped</p>
+    <h1>I rebuild engineering disasters so you can cause them yourself.</h1>
+    <p class="lede">
+      One failure per episode. The real mechanism as running code, the bug you can trigger, the fix, and the test that
+      proves it. Everything open source, every claim sourced.
+    </p>
+    <div class="ctas">
+      <a class="btn primary" href="/lab/ep-00-break-it-yourself/">Read episode 00 →</a>
+      <a class="btn" href="#roadmap">See the roadmap</a>
     </div>
-    <SignalScope />
   </section>
 
-  <section class="wrap">
-    <div class="section-head"><span class="label">01</span><h2>Modules</h2></div>
-    <div class="modules">
-      {
-        modules.map((m) => (
-          <a class="module panel" href={`/${m.id}/`} data-series={m.id}>
-            <span class="label row">
-              <span>Module {m.code}</span>
-              <span class="hot">{m.status}</span>
-            </span>
-            <span class="name">{m.name}</span>
-            <span class="tagline">{m.tagline}</span>
-            <span class="desc">{m.description}</span>
-            <span class="label go">Open module →</span>
-          </a>
-        ))
-      }
+  <section class="wrap try">
+    <div class="story">
+      <p class="label"><span class="hot" style="color: var(--lab)">Try it now</span> · 4 June 1996</p>
+      <h2>A 16-bit integer destroyed a rocket.</h2>
+      <p>
+        Ariane 5 reused guidance code from Ariane 4. One value, the horizontal bias, was converted from a 64-bit float
+        into a 16-bit integer with no range check. Ariane 4 never flew fast enough to overflow it. Ariane 5 did, 37
+        seconds after launch.
+      </p>
+      <p class="muted">Drag the slider past 32,767. Episode 01 rebuilds the full flight software.</p>
+    </div>
+    <OverflowDemo />
+  </section>
+
+  <section class="wrap" id="roadmap" data-series="lab">
+    <div class="section-head"><span class="label">01</span><h2>{SERIES.lab.name}: Season 1</h2></div>
+    <Roadmap items={ROADMAP.lab} />
+  </section>
+
+  <section class="wrap next-series" data-series="explore">
+    <div class="section-head"><span class="label">02</span><h2>Coming next: {SERIES.explore.name}</h2></div>
+    <div class="explore-grid">
+      <div>
+        <p class="tagline">{SERIES.explore.tagline}</p>
+        <p class="muted">{SERIES.explore.description}</p>
+        <a class="btn" href="/explore/">What’s planned →</a>
+      </div>
+      <ul class="topics">
+        {
+          ROADMAP.explore.slice(0, 4).map((t) => (
+            <li>
+              <span class="label">{t.ref}</span>
+              <span class="t">{t.title}</span>
+              <span class="h">{t.hook}</span>
+            </li>
+          ))
+        }
+      </ul>
     </div>
   </section>
 
   {
     posts.length > 0 && (
       <section class="wrap latest">
-        <div class="section-head"><span class="label">02</span><h2>Latest log entries</h2></div>
+        <div class="section-head"><span class="label">03</span><h2>Log</h2></div>
         <PostList posts={posts} showSeries />
       </section>
     )
@@ -61,37 +77,64 @@ const modules = [
 </Base>
 
 <style>
-  .hero {
-    display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
-    gap: 2.5rem 3.5rem;
-    align-items: center;
-    padding-block: clamp(3rem, 8vw, 6rem) clamp(3rem, 6vw, 5rem);
-  }
-  .hero h1 { font-size: clamp(2.4rem, 5.2vw, 3.7rem); }
-  @media (max-width: 880px) {
-    .hero { grid-template-columns: 1fr; }
-  }
-  .modules {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
-    gap: 1.25rem;
-  }
-  .module {
-    display: grid;
-    gap: 0.5rem;
-    align-content: start;
-    padding: 1.4rem 1.5rem 1.3rem;
+  .hero { padding-block: clamp(3rem, 8vw, 5.5rem) 2.5rem; }
+  .hero h1 { max-width: 19ch; font-size: clamp(2.3rem, 5.4vw, 3.9rem); }
+  .ctas { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.8rem; }
+  .btn {
+    display: inline-block;
+    padding: 0.7rem 1.1rem;
+    font: 500 0.78rem var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     text-decoration: none;
-    border-top: 3px solid var(--accent);
-    transition: border-color 0.15s ease, transform 0.15s ease;
+    border: 1px solid var(--rule-strong);
+    background: var(--surface);
   }
-  .module:hover { border-color: var(--accent); transform: translateY(-2px); }
-  .row { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.4rem; }
-  .name { font: 600 1.75rem/1.1 var(--font-display); letter-spacing: -0.02em; }
-  .tagline { font: 500 0.95rem var(--font-mono); color: var(--accent); }
-  .desc { color: var(--muted); }
-  .go { margin-top: 0.8rem; color: var(--ink); }
-  .module:hover .go { color: var(--accent); }
+  .btn:hover { background: var(--panel); }
+  .btn.primary { background: var(--ink); color: var(--bg); }
+  .btn.primary:hover { background: var(--lab); border-color: var(--lab); color: #fff; }
+
+  .try {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 1rem 3rem;
+    align-items: center;
+    padding-block: 2.5rem 4.5rem;
+  }
+  .story h2 { margin: 0.5rem 0 1rem; font-size: clamp(1.6rem, 3vw, 2.2rem); }
+  .story p { text-wrap: pretty; }
+  .muted { color: var(--muted); }
+  @media (max-width: 880px) {
+    .try { grid-template-columns: 1fr; }
+  }
+
+  .next-series { margin-top: 4.5rem; }
+  .explore-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+    gap: 1.5rem 3rem;
+  }
+  @media (max-width: 880px) {
+    .explore-grid { grid-template-columns: 1fr; }
+  }
+  .tagline { font: 600 1.35rem var(--font-display); color: var(--accent); margin: 0 0 0.6rem; }
+  .topics {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+    gap: 0.75rem;
+  }
+  .topics li {
+    display: grid;
+    gap: 0.25rem;
+    padding: 0.9rem 1rem;
+    border: 1px solid var(--rule);
+    border-left: 3px solid var(--explore);
+    background: var(--surface);
+  }
+  .topics .t { font: 600 1.02rem var(--font-display); }
+  .topics .h { font-size: 0.9rem; color: var(--muted); }
   .latest { margin-top: 4.5rem; }
 </style>

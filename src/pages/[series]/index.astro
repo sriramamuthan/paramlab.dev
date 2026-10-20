@@ -1,6 +1,8 @@
 ---
 import Base from '../../layouts/Base.astro';
 import PostList from '../../components/PostList.astro';
+import Roadmap from '../../components/Roadmap.astro';
+import { ROADMAP } from '../../data/roadmap';
 import { SERIES, SITE, type Series } from '../../data/site';
 import { getPosts } from '../../data/posts';
 
@@ -29,23 +31,23 @@ const code = series.id === 'lab' ? 'A' : 'B';
   </section>
 
   <section class="wrap">
-    <div class="section-head"><span class="label">01</span><h2>Log</h2></div>
-    {
-      posts.length > 0 ? (
-        <PostList posts={posts} />
-      ) : (
-        <p class="empty panel">
-          <span class="label hot">[ Standby ]</span> The first entry is in the works. Follow the <a href="/rss.xml">RSS feed</a> to
-          catch it.
-        </p>
-      )
-    }
+    <div class="section-head"><span class="label">01</span><h2>{series.id === 'lab' ? 'Season 1' : 'First explainers'}</h2></div>
+    <Roadmap items={ROADMAP[series.id]} />
   </section>
+
+  {
+    posts.length > 0 && (
+      <section class="wrap log">
+        <div class="section-head"><span class="label">02</span><h2>Log</h2></div>
+        <PostList posts={posts} />
+      </section>
+    )
+  }
 </Base>
 
 <style>
   .intro { padding-block: clamp(2.5rem, 7vw, 5rem) 2.5rem; }
   .tagline { font: 500 1.05rem var(--font-mono); color: var(--accent); margin: -0.3rem 0 0.8rem; }
   .repo { margin-top: 1.5rem; text-transform: none; letter-spacing: 0.02em; }
-  .empty { padding: 1.4rem 1.5rem; color: var(--muted); }
+  .log { margin-top: 4rem; }
 </style>

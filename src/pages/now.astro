@@ -1,26 +1,77 @@
 ---
 import Base from '../layouts/Base.astro';
 
-// Update this whenever focus shifts. https://nownownow.com/about
-const updated = new Date('2026-10-20');
+// A /now page: what I'm focused on at the moment. https://nownownow.com/about
+const updated = '2026-10-20';
+
+const sections = [
+  {
+    title: 'Working on',
+    items: [
+      'Ariane 5 (EP-01): checking every fact in the 1996 inquiry board report before writing any simulation code.',
+      'The flight model: two identical inertial reference computers on the same inputs, which is why the backup didn’t help.',
+    ],
+  },
+  {
+    title: 'Just shipped',
+    items: [
+      'This site, and episode 00 with its first interactive demo.',
+      'The toolkit’s first module: checked, wrapping and saturating integer conversions, with tests. The same input, 40,000, gives an error in Ada, −25,536 in C, and 32,767 when clamped.',
+    ],
+  },
+  {
+    title: 'Up next',
+    items: [
+      'The EP-01 write-up and video.',
+      'The first Show Me Why explainer: why 45° throws furthest.',
+      'Newsletter signup, so you don’t have to check back.',
+    ],
+  },
+];
 ---
 
 <Base title="Now" description="What I'm working on right now.">
   <article class="prose-wrap">
     <header>
-      <p class="label">Now · updated {updated.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+      <p class="label">Now · updated <time datetime={updated}>{updated}</time></p>
       <h1>What I’m doing now</h1>
+      <p class="lede">A running status log. If it’s here, it’s what I’m actually spending time on this week.</p>
     </header>
-    <div class="prose">
-      <ul>
-        <li><strong>Launching this site</strong> and the first series, <a href="/lab/">Post-Mortem Lab</a>.</li>
-        <li><strong>Building episode 1:</strong> the Ariane 5 explosion, a 64-bit number squeezed into 16 bits.</li>
-        <li><strong>Planning <a href="/explore/">Show Me Why</a></strong>: science and maths explained visually with code.</li>
-      </ul>
-    </div>
+
+    {
+      sections.map((s, i) => (
+        <section class="block">
+          <div class="section-head">
+            <span class="label">{String(i + 1).padStart(2, '0')}</span>
+            <h2>{s.title}</h2>
+          </div>
+          <ul>
+            {s.items.map((item) => <li>{item}</li>)}
+          </ul>
+        </section>
+      ))
+    }
   </article>
 </Base>
 
 <style>
-  header { padding-block: clamp(2.5rem, 7vw, 4.5rem) 0.5rem; }
+  header { padding-block: clamp(2.5rem, 7vw, 4.5rem) 1rem; }
+  .block { margin-top: 2.5rem; max-width: var(--measure); }
+  ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.6rem; }
+  li {
+    position: relative;
+    padding: 0.8rem 1rem 0.8rem 2.2rem;
+    border: 1px solid var(--rule);
+    background: var(--surface);
+    text-wrap: pretty;
+  }
+  li::before {
+    content: '';
+    position: absolute;
+    left: 1rem;
+    top: 1.35rem;
+    width: 6px;
+    height: 6px;
+    background: var(--lab);
+  }
 </style>
