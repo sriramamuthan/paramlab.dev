@@ -1,9 +1,10 @@
 export const SITE = {
-  title: 'Sriram Amuthan',
+  title: 'ParamLab',
+  tagline: 'Change one thing. See what happens.',
   description:
-    'Building things in public: rebuilding famous engineering failures, and explaining science and maths with code you can play with.',
-  author: 'Sriram Amuthan',
-  github: 'https://github.com/', // TODO: add GitHub username
+    'Famous engineering failures you can break yourself, and science and maths explained with code you can play with.',
+  author: 'Ram',
+  github: 'https://github.com/sriramamuthan/',
   youtube: '', // TODO: add channel URL once created
 };
 

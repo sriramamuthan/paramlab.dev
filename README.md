@@ -1,6 +1,6 @@
-# sriramamuthan.dev
+# paramlab.dev
 
-Personal site and home of two series:
+ParamLab: change one thing, see what happens. Home of two series:
 
 - **Post-Mortem Lab** (`/lab`): engineering failures rebuilt so you can break them yourself
 - **Show Me Why** (`/explore`): science and maths explained visually with code

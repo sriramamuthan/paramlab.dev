@@ -1,6 +1,6 @@
-# Site plan
+# ParamLab site plan
 
-Personal site and home for two series. Built with Astro 7 and MDX, and deployed on Cloudflare Pages.
+ParamLab (paramlab.dev): home for two series. Built with Astro 7 and MDX, and deployed on Cloudflare Pages.
 
 | Series | Path | What | Code |
 |---|---|---|---|
@@ -34,7 +34,7 @@ Ciechanowski and Nicky Case (one-off interactive essays), PhET (simulations), Br
 
 ## Site to-do
 
-- [ ] Fill in the GitHub username in `src/data/site.ts`
+- [x] GitHub username in `src/data/site.ts`
 - [ ] Add the YouTube channel link
 - [ ] Newsletter signup (Buttondown)
 - [ ] Comments (Giscus, backed by GitHub Discussions)
