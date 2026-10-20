@@ -2,15 +2,18 @@
 import '../styles/global.css';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
+import IncidentBlueprints from '../components/IncidentBlueprints.astro';
 import { SITE, type SeriesId } from '../data/site';
 
 interface Props {
   title?: string;
   description?: string;
   series?: SeriesId;
+  /** Decorative drawing behind the top of the page. Per-page artwork comes later; 'none' turns it off. */
+  background?: 'incidents' | 'none';
 }
 
-const { title, description = SITE.description, series } = Astro.props;
+const { title, description = SITE.description, series, background = 'incidents' } = Astro.props;
 const pageTitle = title ? `${title} · ${SITE.title}` : SITE.title;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
@@ -42,8 +45,28 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   <body data-series={series}>
     <Header active={series} />
     <main>
+      {
+        background !== 'none' && (
+          <div class="page-bg">
+            <IncidentBlueprints />
+          </div>
+        )
+      }
       <slot />
     </main>
     <Footer />
   </body>
 </html>
+
+<style>
+  main { position: relative; isolation: isolate; }
+  .page-bg {
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: min(640px, 100vh);
+    z-index: -1;
+    pointer-events: none;
+    -webkit-mask-image: linear-gradient(to bottom, #000 65%, transparent);
+    mask-image: linear-gradient(to bottom, #000 65%, transparent);
+  }
+</style>

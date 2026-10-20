@@ -11,6 +11,7 @@ const posts = defineCollection({
     date: z.coerce.date(),
     episode: z.number().int().nonnegative().optional(),
     youtube: z.string().optional(), // YouTube video id
+    audio: z.string().optional(), // narration file under public/, e.g. /audio/ep-00.mp3
     repoTag: z.string().optional(), // git tag in the series repo this post covers
     tags: z.array(z.string()).default([]),
     draft: z.boolean().default(false),

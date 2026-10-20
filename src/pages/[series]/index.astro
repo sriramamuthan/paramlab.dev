@@ -2,7 +2,6 @@
 import Base from '../../layouts/Base.astro';
 import PostList from '../../components/PostList.astro';
 import Roadmap from '../../components/Roadmap.astro';
-import IncidentBlueprints from '../../components/IncidentBlueprints.astro';
 import { ROADMAP } from '../../data/roadmap';
 import { SERIES, SITE, type Series } from '../../data/site';
 import { getPosts } from '../../data/posts';
@@ -18,7 +17,6 @@ const code = series.id === 'lab' ? 'A' : 'B';
 
 <Base title={series.name} description={series.description} series={series.id}>
   <div class="intro-band">
-  {series.id === 'lab' && <IncidentBlueprints />}
   <section class="wrap intro">
     <p class="label">Module {code} · <span class="hot">{posts.length ? `${posts.length} published` : 'In development'}</span></p>
     <h1>{series.name}</h1>

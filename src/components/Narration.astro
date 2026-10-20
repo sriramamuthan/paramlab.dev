@@ -1,0 +1,21 @@
+---
+// Audio version of a post. Shown only when the post's frontmatter has `audio`.
+interface Props {
+  src: string;
+}
+
+const { src } = Astro.props;
+---
+
+<aside class="narration panel">
+  <p class="label"><span class="hot">▶ Listen</span> · narrated version</p>
+  <audio controls preload="metadata" src={src}>
+    <a href={src}>Download the audio</a>
+  </audio>
+</aside>
+
+<style>
+  .narration { margin: 0 0 2rem; padding: 0.9rem 1rem 1rem; }
+  .label { margin: 0 0 0.6rem; }
+  audio { display: block; width: 100%; accent-color: var(--accent); }
+</style>
