@@ -1,0 +1,110 @@
+---
+// Home-page scope: one parameter (gain) drives a signal; push it past the rails and the trace clips into a fault.
+---
+
+<signal-scope class="scope panel">
+  <div class="top label">
+    <span>Fig. 00 · Every system has a limit</span>
+    <span class="status" data-status>Nominal</span>
+  </div>
+
+  <svg viewBox="0 0 600 220" role="img" aria-label="A sine wave whose height follows the gain slider. Above 100% it clips flat against the limits.">
+    <defs>
+      <pattern id="scope-grid" width="60" height="27.5" patternUnits="userSpaceOnUse">
+        <path d="M60 0H0V27.5" fill="none" stroke="var(--rule)" stroke-width="1" />
+      </pattern>
+    </defs>
+    <rect width="600" height="220" fill="url(#scope-grid)" />
+    <line class="axis" x1="0" y1="110" x2="600" y2="110" />
+    <line class="rail" x1="0" y1="30" x2="600" y2="30" />
+    <line class="rail" x1="0" y1="190" x2="600" y2="190" />
+    <text class="rail-label" x="596" y="24" text-anchor="end">+LIMIT</text>
+    <text class="rail-label" x="596" y="206" text-anchor="end">−LIMIT</text>
+    <polyline class="trace" data-trace points="" />
+  </svg>
+
+  <label class="control">
+    <span class="label">Gain</span>
+    <input type="range" min="0" max="100" value="40" aria-label="Gain" />
+    <output class="label" data-gain>80%</output>
+  </label>
+</signal-scope>
+
+<script>
+  const SAMPLES = 240;
+  const MID = 110;
+  const HALF = 80; // pixels from the axis to a rail
+
+  class SignalScope extends HTMLElement {
+    connectedCallback() {
+      const input = this.querySelector('input')!;
+      const trace = this.querySelector<SVGPolylineElement>('[data-trace]')!;
+      const gainOut = this.querySelector<HTMLOutputElement>('[data-gain]')!;
+      const statusEl = this.querySelector<HTMLElement>('[data-status]')!;
+      const still = matchMedia('(prefers-reduced-motion: reduce)').matches;
+      let phase = 0;
+      let visible = true;
+
+      const draw = () => {
+        const amp = Number(input.value) / 50; // 1.0 = exactly at the rails
+        const pts: string[] = [];
+        for (let i = 0; i <= SAMPLES; i++) {
+          const x = (i / SAMPLES) * 600;
+          const v = Math.max(-1, Math.min(1, amp * Math.sin((i / SAMPLES) * Math.PI * 6 + phase)));
+          pts.push(`${x.toFixed(1)},${(MID - v * HALF).toFixed(1)}`);
+        }
+        trace.setAttribute('points', pts.join(' '));
+        const fault = amp > 1;
+        this.toggleAttribute('data-fault', fault);
+        gainOut.textContent = `${Math.round(amp * 100)}%`;
+        statusEl.textContent = fault ? 'Fault · clipping' : 'Nominal';
+      };
+
+      const tick = () => {
+        if (visible) {
+          phase -= 0.04;
+          draw();
+        }
+        requestAnimationFrame(tick);
+      };
+
+      new IntersectionObserver(([e]) => (visible = !!e?.isIntersecting)).observe(this);
+      input.addEventListener('input', draw);
+      draw();
+      if (!still) requestAnimationFrame(tick);
+    }
+  }
+  customElements.define('signal-scope', SignalScope);
+</script>
+
+<style>
+  .scope {
+    display: block;
+    padding: 1rem 1rem 0.9rem;
+    --trace: var(--explore);
+  }
+  .scope[data-fault] { --trace: var(--lab); }
+  .top { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.6rem; }
+  .status { color: var(--trace); font-weight: 600; }
+  .status::before { content: '● '; }
+  svg { display: block; width: 100%; background: var(--bg); border: 1px solid var(--rule); }
+  .axis { stroke: var(--rule); stroke-width: 1; stroke-dasharray: 4 4; }
+  .rail { stroke: var(--lab); stroke-width: 1; stroke-dasharray: 6 4; opacity: 0.6; }
+  .rail-label { font: 500 9px var(--font-mono); letter-spacing: 0.1em; fill: var(--lab); opacity: 0.8; }
+  .trace {
+    fill: none;
+    stroke: var(--trace);
+    stroke-width: 2.5;
+    stroke-linejoin: round;
+    filter: drop-shadow(0 0 4px color-mix(in srgb, var(--trace) 55%, transparent));
+  }
+  .control {
+    display: grid;
+    grid-template-columns: auto 1fr 3.5rem;
+    align-items: center;
+    gap: 0.9rem;
+    margin-top: 0.8rem;
+  }
+  input[type='range'] { width: 100%; accent-color: var(--trace); }
+  output { text-align: right; color: var(--ink); font-variant-numeric: tabular-nums; }
+</style>

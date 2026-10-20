@@ -1,0 +1,104 @@
+---
+// Faded blueprint-style line drawings of Season 1 incidents, used as a page background.
+// Original artwork: no photos, so no licensing questions.
+---
+
+<div class="blueprints" aria-hidden="true">
+  <svg viewBox="-20 0 1200 560" preserveAspectRatio="xMidYMid meet">
+    <g fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round">
+      <!-- Ariane 5: core stage, two boosters, breakup at T+37 s -->
+      <g transform="translate(70 40)">
+        <path d="M60 20 Q60 0 80 -10 Q100 0 100 20 V300 H60 Z" />
+        <path d="M60 60 H100 M60 120 H100 M60 250 H100" opacity="0.6" />
+        <path d="M30 120 L42 95 L54 120 V310 H30 Z" />
+        <path d="M106 120 L118 95 L130 120 V310 H106 Z" />
+        <path d="M68 300 L64 325 H96 L92 300 M33 310 L30 330 H54 L51 310 M109 310 L106 330 H130 L127 310" />
+        <path d="M0 -10 V330 M-6 -10 H6 M-6 330 H6" stroke-dasharray="3 4" opacity="0.7" />
+        <g opacity="0.8">
+          <path d="M150 40 l14 -10 M152 60 l20 2 M146 20 l8 -18 M160 80 l16 12" />
+          <circle cx="182" cy="44" r="3" /><circle cx="176" cy="18" r="2" />
+        </g>
+        <text x="-4" y="370">ARIANE 5 · F501 · 1996</text>
+        <text x="-4" y="388">T+37 s · OPERAND ERROR</text>
+      </g>
+
+      <!-- Mars Climate Orbiter: intended orbit vs actual trajectory into the atmosphere -->
+      <g transform="translate(330 60)">
+        <circle cx="140" cy="200" r="80" />
+        <circle cx="140" cy="200" r="96" stroke-dasharray="2 5" opacity="0.6" />
+        <ellipse cx="140" cy="200" rx="170" ry="128" stroke-dasharray="8 6" />
+        <path d="M-10 40 C 60 90, 90 140, 70 190" />
+        <g transform="translate(-30 22) rotate(-20)">
+          <rect x="0" y="0" width="16" height="12" />
+          <path d="M16 6 H44 M18 0 H42 V12 H18" />
+        </g>
+        <text x="0" y="360">MARS CLIMATE ORBITER · 1999</text>
+        <text x="0" y="378">LBF·S ≠ N·S</text>
+      </g>
+
+      <!-- Patriot: launcher and an intercept that missed by clock drift -->
+      <g transform="translate(700 70)">
+        <path d="M0 230 H170 M20 230 V214 H150 V230" />
+        <g transform="translate(40 214) rotate(-38)">
+          <rect x="0" y="-26" width="120" height="26" />
+          <path d="M0 -13 H120 M30 -26 V0 M60 -26 V0 M90 -26 V0" opacity="0.6" />
+        </g>
+        <path d="M150 120 Q 250 -20 330 40" stroke-dasharray="6 5" />
+        <path d="M360 -10 L 300 140" />
+        <circle cx="318" cy="96" r="14" stroke-dasharray="3 3" />
+        <circle cx="336" cy="52" r="5" />
+        <text x="0" y="280">PATRIOT · DHAHRAN · 1991</text>
+        <text x="0" y="298">CLOCK DRIFT 0.34 s</text>
+      </g>
+
+      <!-- Therac-25: gantry, beam and table -->
+      <g transform="translate(160 430)" opacity="0.9">
+        <path d="M0 0 H70 V30 H40 V40 H30 V30 H0 Z" />
+        <path d="M35 42 V70" stroke-dasharray="3 3" />
+        <path d="M-10 74 H90 M10 74 V96 M70 74 V96" />
+        <text x="110" y="30">THERAC-25 · 1985–87</text>
+        <text x="110" y="48">RACE CONDITION</text>
+      </g>
+
+      <!-- Knight Capital: order flow running away -->
+      <g transform="translate(560 410)">
+        <path d="M0 0 V110 H220" />
+        <path d="M0 22 H40 V30 H70 V44 H100 V70 H130 V92 H160 V104 H220" />
+        <path d="M-4 22 H4 M-4 66 H4 M44 106 V114 M110 106 V114 M176 106 V114" opacity="0.6" />
+        <text x="0" y="140">KNIGHT CAPITAL · 2012 · 45 MIN</text>
+      </g>
+
+      <!-- CrowdStrike: crashed screen -->
+      <g transform="translate(920 380)">
+        <rect x="0" y="0" width="200" height="124" />
+        <path d="M80 124 L72 146 H128 L120 124" />
+        <path d="M40 34 v8 M60 34 v8 M40 62 Q50 52 60 62" />
+        <path d="M30 86 H150 M30 100 H110" opacity="0.6" />
+        <text x="0" y="176">CHANNEL FILE 291 · 2024</text>
+      </g>
+    </g>
+  </svg>
+</div>
+
+<style>
+  .blueprints {
+    position: absolute;
+    inset: 0 0 0 40%;
+    overflow: hidden;
+    pointer-events: none;
+    color: var(--ink);
+    opacity: 0.16;
+    -webkit-mask-image: linear-gradient(to right, transparent 0%, #000 35%);
+    mask-image: linear-gradient(to right, transparent 0%, #000 35%);
+  }
+  svg { width: 100%; height: 100%; }
+  text {
+    fill: currentColor;
+    stroke: none;
+    font: 500 11px var(--font-mono);
+    letter-spacing: 0.12em;
+  }
+  @media (max-width: 880px) {
+    .blueprints { inset: 0; opacity: 0.07; -webkit-mask-image: none; mask-image: none; }
+  }
+</style>

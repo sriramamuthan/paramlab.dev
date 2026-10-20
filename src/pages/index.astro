@@ -3,6 +3,7 @@ import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
 import Roadmap from '../components/Roadmap.astro';
 import OverflowDemo from '../components/demos/OverflowDemo.astro';
+import SignalScope from '../components/SignalScope.astro';
 import { SERIES } from '../data/site';
 import { ROADMAP } from '../data/roadmap';
 import { getPosts } from '../data/posts';
@@ -13,6 +14,7 @@ const shipped = ROADMAP.lab.filter((i) => i.status === 'published').length;
 
 <Base>
   <section class="wrap hero">
+    <div class="copy">
     <p class="label"><span style="color: var(--lab)">■</span> ParamLab · Season 1 · {shipped} of {ROADMAP.lab.length} shipped</p>
     <h1>I rebuild engineering disasters so you can cause them yourself.</h1>
     <p class="lede">
@@ -23,6 +25,8 @@ const shipped = ROADMAP.lab.filter((i) => i.status === 'published').length;
       <a class="btn primary" href="/lab/ep-00-break-it-yourself/">Read episode 00 →</a>
       <a class="btn" href="#roadmap">See the roadmap</a>
     </div>
+    </div>
+    <SignalScope />
   </section>
 
   <section class="wrap try">
@@ -77,8 +81,17 @@ const shipped = ROADMAP.lab.filter((i) => i.status === 'published').length;
 </Base>
 
 <style>
-  .hero { padding-block: clamp(3rem, 8vw, 5.5rem) 2.5rem; }
-  .hero h1 { max-width: 19ch; font-size: clamp(2.3rem, 5.4vw, 3.9rem); }
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+    gap: 2.5rem 3.5rem;
+    align-items: center;
+    padding-block: clamp(3rem, 8vw, 5.5rem) 2.5rem;
+  }
+  .hero h1 { max-width: 16ch; font-size: clamp(2.2rem, 4.6vw, 3.5rem); }
+  @media (max-width: 880px) {
+    .hero { grid-template-columns: 1fr; }
+  }
   .ctas { display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.8rem; }
   .btn {
     display: inline-block;

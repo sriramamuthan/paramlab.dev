@@ -2,6 +2,7 @@
 import Base from '../../layouts/Base.astro';
 import PostList from '../../components/PostList.astro';
 import Roadmap from '../../components/Roadmap.astro';
+import IncidentBlueprints from '../../components/IncidentBlueprints.astro';
 import { ROADMAP } from '../../data/roadmap';
 import { SERIES, SITE, type Series } from '../../data/site';
 import { getPosts } from '../../data/posts';
@@ -16,6 +17,8 @@ const code = series.id === 'lab' ? 'A' : 'B';
 ---
 
 <Base title={series.name} description={series.description} series={series.id}>
+  <div class="intro-band">
+  {series.id === 'lab' && <IncidentBlueprints />}
   <section class="wrap intro">
     <p class="label">Module {code} · <span class="hot">{posts.length ? `${posts.length} published` : 'In development'}</span></p>
     <h1>{series.name}</h1>
@@ -29,6 +32,7 @@ const code = series.id === 'lab' ? 'A' : 'B';
       )
     }
   </section>
+  </div>
 
   <section class="wrap">
     <div class="section-head"><span class="label">01</span><h2>{series.id === 'lab' ? 'Season 1' : 'First explainers'}</h2></div>
@@ -46,7 +50,9 @@ const code = series.id === 'lab' ? 'A' : 'B';
 </Base>
 
 <style>
-  .intro { padding-block: clamp(2.5rem, 7vw, 5rem) 2.5rem; }
+  .intro-band { position: relative; border-bottom: 1px solid var(--rule); margin-bottom: 3rem; }
+  .intro { position: relative; padding-block: clamp(3rem, 8vw, 6rem) 3rem; }
+  .intro .lede { max-width: 46ch; }
   .tagline { font: 500 1.05rem var(--font-mono); color: var(--accent); margin: -0.3rem 0 0.8rem; }
   .repo { margin-top: 1.5rem; text-transform: none; letter-spacing: 0.02em; }
   .log { margin-top: 4rem; }
