@@ -1,27 +1,37 @@
 ---
 import { SITE } from '../data/site';
 const year = new Date().getFullYear();
+const built = new Date().toISOString().slice(0, 10);
 ---
 
-<footer class="wrap site-footer">
-  <p>© {year} {SITE.title}. Code on <a href={SITE.github}>GitHub</a>, MIT licensed.</p>
-  <p>
-    <a href="/rss.xml">RSS</a>
-    {SITE.youtube && <> · <a href={SITE.youtube}>YouTube</a></>}
-  </p>
+<footer class="site-footer">
+  <div class="wrap row">
+    <p class="label">© {year} {SITE.title} · Code MIT · <a href={SITE.github}>GitHub</a> · <a href="/rss.xml">RSS</a>{SITE.youtube && <> · <a href={SITE.youtube}>YouTube</a></>}</p>
+    <p class="label status"><span class="dot" aria-hidden="true"></span> All systems nominal · build {built}</p>
+  </div>
 </footer>
 
 <style>
   .site-footer {
+    margin-top: 7rem;
+    border-top: 1px solid var(--rule);
+    background: var(--bg);
+  }
+  .row {
     display: flex;
     flex-wrap: wrap;
     justify-content: space-between;
-    gap: 0.5rem 2rem;
-    margin-top: 6rem;
-    padding-block: 2rem 3rem;
-    border-top: 1px solid var(--rule);
-    color: var(--muted);
-    font-size: 0.88rem;
+    gap: 0.6rem 2rem;
+    padding-block: 1.6rem 2.4rem;
   }
   p { margin: 0; }
+  a { text-decoration: none; }
+  a:hover { color: var(--ink); }
+  .status { display: inline-flex; align-items: center; gap: 0.5rem; }
+  .dot {
+    width: 7px;
+    height: 7px;
+    background: var(--explore);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--explore) 25%, transparent);
+  }
 </style>

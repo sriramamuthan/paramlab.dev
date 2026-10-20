@@ -8,6 +8,7 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://paramlab.dev',
   integrations: [mdx(), sitemap()],
+  devToolbar: { enabled: false },
   markdown: {
     shikiConfig: {
       themes: { light: 'github-light', dark: 'github-dark' },

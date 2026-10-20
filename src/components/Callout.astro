@@ -8,28 +8,15 @@ const { type = 'note', title } = Astro.props;
 const defaults = { note: 'Note', lesson: 'The lesson', try: 'Try it yourself' };
 ---
 
-<aside class={`callout ${type}`}>
-  <p class="label">{title ?? defaults[type]}</p>
+<aside class={`callout panel ${type}`}>
+  <p class="label"><span class="hot">[ {title ?? defaults[type]} ]</span></p>
   <slot />
 </aside>
 
 <style>
-  .callout {
-    margin: 2rem 0;
-    padding: 1rem 1.25rem;
-    border: 1px solid var(--rule);
-    border-left: 4px solid var(--accent);
-    border-radius: var(--radius);
-    background: var(--surface);
-  }
-  .callout.note { border-left-color: var(--muted); }
-  .label {
-    margin: 0 0 0.4rem;
-    font: 600 0.75rem var(--font-mono);
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--accent);
-  }
-  .callout.note .label { color: var(--muted); }
+  .callout { margin: 2rem 0; padding: 1rem 1.25rem; }
+  .callout.note .hot { color: var(--muted); }
+  .callout.try { border-color: color-mix(in srgb, var(--accent) 45%, var(--rule)); }
+  .label { margin: 0 0 0.5rem; }
   .callout :global(p:last-child) { margin-bottom: 0; }
 </style>

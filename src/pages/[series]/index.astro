@@ -10,37 +10,42 @@ export function getStaticPaths() {
 
 const { series } = Astro.props as { series: Series };
 const posts = await getPosts(series.id);
+const code = series.id === 'lab' ? 'A' : 'B';
 ---
 
 <Base title={series.name} description={series.description} series={series.id}>
   <section class="wrap intro">
-    <p class="eyebrow">Series</p>
+    <p class="label">Module {code} · <span class="hot">{posts.length ? `${posts.length} published` : 'In development'}</span></p>
     <h1>{series.name}</h1>
     <p class="tagline">{series.tagline}</p>
     <p class="lede">{series.description}</p>
     {
       series.repo && (
-        <p class="repo">
-          Code: <a href={`${SITE.github}${series.repo}`}>github.com/…/{series.repo}</a>
+        <p class="label repo">
+          Source <a href={`${SITE.github}${series.repo}`}>{SITE.github.replace('https://', '')}{series.repo}</a>
         </p>
       )
     }
   </section>
 
   <section class="wrap">
+    <div class="section-head"><span class="label">01</span><h2>Log</h2></div>
     {
       posts.length > 0 ? (
         <PostList posts={posts} />
       ) : (
-        <p class="empty">The first episode is in the works. Subscribe to the <a href="/rss.xml">RSS feed</a> to catch it.</p>
+        <p class="empty panel">
+          <span class="label hot">[ Standby ]</span> The first entry is in the works. Follow the <a href="/rss.xml">RSS feed</a> to
+          catch it.
+        </p>
       )
     }
   </section>
 </Base>
 
 <style>
-  .intro { padding-block: clamp(2.5rem, 7vw, 5rem) 2rem; }
-  .tagline { font: 600 1.15rem var(--font-serif); color: var(--accent); margin: -0.4rem 0 0.6rem; }
-  .repo { font: 0.85rem var(--font-mono); color: var(--muted); }
-  .empty { color: var(--muted); padding: 2rem 0; border-top: 1px solid var(--rule); }
+  .intro { padding-block: clamp(2.5rem, 7vw, 5rem) 2.5rem; }
+  .tagline { font: 500 1.05rem var(--font-mono); color: var(--accent); margin: -0.3rem 0 0.8rem; }
+  .repo { margin-top: 1.5rem; text-transform: none; letter-spacing: 0.02em; }
+  .empty { padding: 1.4rem 1.5rem; color: var(--muted); }
 </style>

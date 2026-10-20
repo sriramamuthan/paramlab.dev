@@ -1,6 +1,7 @@
 ---
 import Base from '../layouts/Base.astro';
 import PostList from '../components/PostList.astro';
+import SignalScope from '../components/SignalScope.astro';
 import { SERIES } from '../data/site';
 import { getPosts } from '../data/posts';
 
@@ -9,36 +10,50 @@ const counts = {
   lab: (await getPosts('lab')).length,
   explore: (await getPosts('explore')).length,
 };
+const modules = [
+  { ...SERIES.lab, code: 'A', status: counts.lab ? `${counts.lab} ${counts.lab === 1 ? 'episode' : 'episodes'}` : 'In development' },
+  { ...SERIES.explore, code: 'B', status: counts.explore ? `${counts.explore} explainers` : 'In development' },
+];
 ---
 
 <Base>
   <section class="wrap hero">
-    <p class="eyebrow">ParamLab · building in public</p>
-    <h1>Change one thing. See what happens.</h1>
-    <p class="lede">
-      Every system has a parameter that matters more than the rest. Here we find it, push it, and watch what breaks:
-      famous engineering failures you can cause yourself, and science and maths you can poke at until they click.
-    </p>
+    <div class="copy">
+      <p class="label"><span class="hot" style="color: var(--lab)">■</span> paramlab · building in public</p>
+      <h1>Change one thing.<br />See what happens.</h1>
+      <p class="lede">
+        Every system has one parameter that matters more than the rest. Here we find it, push it, and watch what
+        breaks. Famous engineering failures you can cause yourself, and science and maths you can poke at until it
+        clicks.
+      </p>
+    </div>
+    <SignalScope />
   </section>
 
-  <section class="wrap series-grid" aria-label="Series">
-    {
-      Object.values(SERIES).map((s) => (
-        <a class="series-card" href={`/${s.id}/`} data-series={s.id}>
-          <span class="eyebrow">{counts[s.id] ? `${counts[s.id]} posts` : 'Coming soon'}</span>
-          <span class="name">{s.name}</span>
-          <span class="tagline">{s.tagline}</span>
-          <span class="desc">{s.description}</span>
-          <span class="go" aria-hidden="true">→</span>
-        </a>
-      ))
-    }
+  <section class="wrap">
+    <div class="section-head"><span class="label">01</span><h2>Modules</h2></div>
+    <div class="modules">
+      {
+        modules.map((m) => (
+          <a class="module panel" href={`/${m.id}/`} data-series={m.id}>
+            <span class="label row">
+              <span>Module {m.code}</span>
+              <span class="hot">{m.status}</span>
+            </span>
+            <span class="name">{m.name}</span>
+            <span class="tagline">{m.tagline}</span>
+            <span class="desc">{m.description}</span>
+            <span class="label go">Open module →</span>
+          </a>
+        ))
+      }
+    </div>
   </section>
 
   {
     posts.length > 0 && (
       <section class="wrap latest">
-        <h2>Latest</h2>
+        <div class="section-head"><span class="label">02</span><h2>Latest log entries</h2></div>
         <PostList posts={posts} showSeries />
       </section>
     )
@@ -46,31 +61,37 @@ const counts = {
 </Base>
 
 <style>
-  .hero { padding-block: clamp(3rem, 9vw, 6.5rem) 2.5rem; }
-  .hero h1 { max-width: 16ch; }
-  .series-grid {
+  .hero {
+    display: grid;
+    grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    gap: 2.5rem 3.5rem;
+    align-items: center;
+    padding-block: clamp(3rem, 8vw, 6rem) clamp(3rem, 6vw, 5rem);
+  }
+  .hero h1 { font-size: clamp(2.4rem, 5.2vw, 3.7rem); }
+  @media (max-width: 880px) {
+    .hero { grid-template-columns: 1fr; }
+  }
+  .modules {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
     gap: 1.25rem;
   }
-  .series-card {
-    position: relative;
+  .module {
     display: grid;
-    gap: 0.45rem;
+    gap: 0.5rem;
     align-content: start;
-    padding: 1.6rem 1.6rem 2.6rem;
-    border: 1px solid var(--rule);
-    border-top: 4px solid var(--accent);
-    border-radius: var(--radius);
-    background: var(--surface);
+    padding: 1.4rem 1.5rem 1.3rem;
     text-decoration: none;
-    transition: transform 0.15s ease, border-color 0.15s ease;
+    border-top: 3px solid var(--accent);
+    transition: border-color 0.15s ease, transform 0.15s ease;
   }
-  .series-card:hover { transform: translateY(-2px); border-color: var(--accent); }
-  .name { font: 600 1.7rem/1.15 var(--font-serif); }
-  .tagline { font-weight: 600; color: var(--accent); }
+  .module:hover { border-color: var(--accent); transform: translateY(-2px); }
+  .row { display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.4rem; }
+  .name { font: 600 1.75rem/1.1 var(--font-display); letter-spacing: -0.02em; }
+  .tagline { font: 500 0.95rem var(--font-mono); color: var(--accent); }
   .desc { color: var(--muted); }
-  .go { position: absolute; right: 1.4rem; bottom: 1rem; font-size: 1.3rem; color: var(--accent); }
-  .latest { margin-top: 4rem; }
-  .latest h2 { margin-top: 0; }
+  .go { margin-top: 0.8rem; color: var(--ink); }
+  .module:hover .go { color: var(--accent); }
+  .latest { margin-top: 4.5rem; }
 </style>

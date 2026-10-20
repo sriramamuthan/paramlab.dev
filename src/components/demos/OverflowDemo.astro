@@ -3,14 +3,14 @@
 // Simplified on purpose; the full episode simulates the real flight software.
 ---
 
-<overflow-demo class="demo">
+<overflow-demo class="demo panel">
   <div class="head">
-    <span class="eyebrow">Interactive · Ariane 5, 1996</span>
-    <span class="hint">Drag the slider</span>
+    <span class="label"><span class="tag">Fig. 01</span> Ariane 5 · 1996 · int16 register</span>
+    <span class="label">Drag the slider</span>
   </div>
 
   <label class="control">
-    <span>Horizontal bias value (64-bit float)</span>
+    <span class="label">Horizontal bias · 64-bit float</span>
     <input type="range" min="0" max="60000" step="1" value="20000" />
   </label>
 
@@ -73,44 +73,43 @@
   overflow-demo {
     display: block;
     margin: 2rem 0;
-    padding: 1.25rem;
-    border: 1px solid var(--rule);
-    border-radius: var(--radius);
-    background: var(--surface);
-    --state: #2f9e44;
+    padding: 1.1rem 1.2rem 1.2rem;
+    --state: var(--explore);
   }
-  overflow-demo[data-failed] { --state: var(--lab); }
-  .head { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
-  .eyebrow { color: var(--lab); }
-  .hint { font: 0.78rem var(--font-mono); color: var(--muted); }
-  .control { display: grid; gap: 0.4rem; margin: 1rem 0; font-size: 0.92rem; }
+  overflow-demo[data-failed] { --state: var(--lab); border-color: color-mix(in srgb, var(--lab) 50%, var(--rule)); }
+  .head { display: flex; justify-content: space-between; gap: 0.5rem 1rem; flex-wrap: wrap; }
+  .tag { color: var(--lab); margin-right: 0.4rem; }
+  .control { display: grid; gap: 0.5rem; margin: 1.1rem 0; }
   input[type='range'] { width: 100%; accent-color: var(--state); }
   .readout { display: flex; flex-wrap: wrap; gap: 0.5rem 2.5rem; }
-  .k { display: block; font: 0.72rem var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
-  .v { font: 600 1.5rem var(--font-mono); font-variant-numeric: tabular-nums; }
+  .k { display: block; font: 500 0.7rem var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.1em; }
+  .v { font: 600 1.6rem var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
   .bits {
     display: grid;
     grid-template-columns: repeat(16, minmax(0, 1fr));
-    gap: 3px;
-    margin: 1.2rem 0 0.8rem;
+    gap: 2px;
+    margin: 1.2rem 0 0.9rem;
+    padding: 2px;
+    border: 1px solid var(--rule);
+    background: var(--bg);
   }
   .bits :global(span) {
     display: grid;
     place-items: center;
     aspect-ratio: 1;
     min-width: 0;
-    border: 1px solid var(--rule);
-    border-radius: 4px;
-    font: 0.8rem var(--font-mono);
+    font: 500 0.78rem var(--font-mono);
     color: var(--muted);
-    background: var(--bg);
+    background: var(--surface);
   }
-  .bits :global(span.on) { background: var(--state); border-color: var(--state); color: #fff; }
+  .bits :global(span:nth-child(8)) { box-shadow: 1px 0 0 var(--rule); }
+  .bits :global(span.on) { background: var(--state); color: var(--on-accent); }
   .status {
     margin: 0;
-    padding-left: 0.8rem;
+    padding: 0.6rem 0.8rem;
     border-left: 3px solid var(--state);
-    font-size: 0.95rem;
-    min-height: 3.2em;
+    background: var(--bg);
+    font-size: 0.94rem;
+    min-height: 3.6em;
   }
 </style>

@@ -1,41 +1,155 @@
 ---
 import Base from '../layouts/Base.astro';
 import { SITE } from '../data/site';
+
+const reasons = [
+  {
+    title: 'I learn by breaking things',
+    body: 'Reading that a race condition killed patients is one thing. Typing fast enough to trigger it yourself is another. The lessons that stuck with me came from things I broke and then had to understand, so every project here is built for you to break.',
+  },
+  {
+    title: 'The best engineering lessons are buried in PDFs',
+    body: 'Inquiry board reports are some of the most honest engineering writing there is. They are also 60-page documents almost nobody reads. Rebuilding each failure as something you can run turns those reports into something you can feel.',
+  },
+  {
+    title: 'Explanations should let you change the input',
+    body: 'Most explanations give you the answer and stop. The real understanding comes when you ask “what if?” and can try it. That goes for a rocket’s guidance software and for a ball thrown at 45°.',
+  },
+  {
+    title: 'How we learn and build has changed',
+    body: 'With AI as a pair programmer, one person can now build what used to take a team. I want to show what that really looks like, the speed and the wrong turns, instead of a polished highlight reel.',
+  },
+  {
+    title: 'Building in public keeps me honest',
+    body: 'Published code can be checked. Published claims can be corrected. A public log means I ship on schedule, cite my sources, and own my mistakes.',
+  },
+];
+
+const principles = [
+  ['Sources first', 'Every claim about a real incident traces to the official investigation or a primary source.'],
+  ['Simplifications labelled', 'Simulations simplify. When they do, the post says where and why.'],
+  ['Proof, not prose', 'Every bug ships with a test that fails, and every fix with a test that passes.'],
+  ['Open by default', 'All code is MIT-licensed. Every episode is a git tag you can check out.'],
+  ['Respect', 'Some of these failures cost lives. We study them to learn, never to mock the people involved.'],
+];
 ---
 
-<Base title="About" description={`About ${SITE.author}.`}>
+<Base title="About" description="Who runs ParamLab, and why it exists.">
   <article class="prose-wrap">
-    <header>
-      <p class="eyebrow">About</p>
+    <header class="head">
+      <p class="label">About · operator notes</p>
       <h1>Hi, I’m Ram.</h1>
-    </header>
-    <div class="prose">
-      <p>
+      <p class="lede">
         Yes, it’s hidden in the name: pa<strong>ram</strong>. A parameter is the one value you change to see how a
         system behaves, and that’s the whole idea behind this lab.
       </p>
+    </header>
+
+    <div class="prose">
       <p>
-        I’m an engineer who learns best by building. This site is where I do that in public: every project is
-        open source, every episode ships working code, and every explanation is something you can run and change.
+        I’m an engineer who learns best by building. ParamLab is where I do that in public: I pick a system, find the
+        parameter that matters, push it until something interesting happens, and publish everything. That means the
+        code, the write-up, the video, and the mistakes along the way.
+      </p>
+
+      <h2>Why I’m doing this</h2>
+    </div>
+
+    <ol class="reasons">
+      {
+        reasons.map((r, i) => (
+          <li class="panel">
+            <span class="label num">R{String(i + 1).padStart(2, '0')}</span>
+            <div>
+              <h3>{r.title}</h3>
+              <p>{r.body}</p>
+            </div>
+          </li>
+        ))
+      }
+    </ol>
+
+    <div class="prose">
+      <h2>What you’ll find here</h2>
+      <p>
+        <strong><a href="/lab/">Post-Mortem Lab</a>:</strong> history’s most expensive engineering failures, from Ariane 5
+        to CrowdStrike, rebuilt as small simulations. You run them, trigger the bug, apply the fix, and keep one lesson.
       </p>
       <p>
-        I build with AI as a pair programmer, mostly Claude Code, and I’m open about it. The point isn’t to look clever.
-        It’s to show how learning and building actually work now, mistakes included.
+        <strong><a href="/explore/">Show Me Why</a>:</strong> ideas from school science and maths, explained with
+        interactive visuals and the code behind them. Change a line and see what changes. It’s made for students, and
+        for anyone who never got the “why” the first time.
       </p>
-      <h2>Why this exists</h2>
-      <p>
-        Most of what I learned stuck because I broke something and had to understand why. Reading about a bug teaches
-        less than causing it yourself. So everything here is built so you can cause it yourself, safely, in your browser.
-      </p>
-      <h2>Find me</h2>
+
+      <h2>How I work</h2>
+    </div>
+
+    <dl class="spec">
+      {
+        principles.map(([k, v]) => (
+          <div>
+            <dt class="label">{k}</dt>
+            <dd>{v}</dd>
+          </div>
+        ))
+      }
+    </dl>
+
+    <div class="prose">
+      <h2>Who it’s for</h2>
       <ul>
-        <li><a href={SITE.github}>GitHub</a></li>
-        <li><a href="/rss.xml">RSS feed</a></li>
+        <li><strong>Developers</strong> who want to recognise failure patterns before they ship them.</li>
+        <li><strong>Students</strong> who learn better by poking at something than by memorising it.</li>
+        <li><strong>Teachers</strong> looking for demos they can put on a projector and change live.</li>
+        <li><strong>Anyone curious</strong> about how things work, and how they stop working.</li>
       </ul>
+
+      <h2>Say hello</h2>
+      <p>
+        Spotted a mistake, or have an incident or topic you want rebuilt? Open an issue or a discussion on <a
+          href={SITE.github}>GitHub</a>. Corrections get credited. You can also follow along via <a href="/rss.xml">RSS</a>.
+      </p>
     </div>
   </article>
 </Base>
 
 <style>
-  header { padding-block: clamp(2.5rem, 7vw, 4.5rem) 0.5rem; }
+  .head { padding-block: clamp(2.5rem, 7vw, 4.5rem) 0.5rem; }
+  .reasons {
+    list-style: none;
+    margin: 1rem 0 0;
+    padding: 0;
+    display: grid;
+    gap: 0.9rem;
+    max-width: var(--measure);
+  }
+  .reasons li {
+    display: grid;
+    grid-template-columns: 3rem 1fr;
+    gap: 1rem;
+    padding: 1.1rem 1.2rem;
+  }
+  .num { color: var(--lab); padding-top: 0.25rem; }
+  .reasons h3 { margin: 0 0 0.35rem; font-size: 1.12rem; }
+  .reasons p { margin: 0; color: var(--muted); text-wrap: pretty; }
+  .spec {
+    margin: 1rem 0 0;
+    max-width: var(--measure);
+    border: 1px solid var(--rule-strong);
+    background: var(--surface);
+  }
+  .spec div {
+    display: grid;
+    grid-template-columns: 12rem 1fr;
+    gap: 0.4rem 1.2rem;
+    padding: 0.8rem 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  .spec div:last-child { border-bottom: 0; }
+  .spec dt { color: var(--ink); padding-top: 0.2rem; }
+  .spec dd { margin: 0; color: var(--muted); }
+  @media (max-width: 560px) {
+    .spec div { grid-template-columns: 1fr; }
+    .reasons li { grid-template-columns: 1fr; gap: 0.3rem; }
+  }
 </style>

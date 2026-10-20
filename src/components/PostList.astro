@@ -8,21 +8,25 @@ interface Props {
 }
 
 const { posts, showSeries = false } = Astro.props;
+const ref = (post: Post) =>
+  post.data.episode !== undefined ? `EP-${String(post.data.episode).padStart(2, '0')}` : '—';
 ---
 
-<ol class="posts">
+<ol class="log">
   {
     posts.map((post) => (
       <li data-series={seriesOf(post)}>
         <a href={urlOf(post)}>
-          <span class="meta">
-            {showSeries && <span class="series">{SERIES[seriesOf(post)].name}</span>}
-            {post.data.episode !== undefined && <span>Ep {String(post.data.episode).padStart(2, '0')}</span>}
-            <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
-            {post.data.draft && <span class="draft">Draft</span>}
+          <span class="ref">{ref(post)}</span>
+          <span class="body">
+            <span class="title">{post.data.title}</span>
+            <span class="desc">{post.data.description}</span>
           </span>
-          <span class="title">{post.data.title}</span>
-          <span class="desc">{post.data.description}</span>
+          <span class="meta label">
+            {showSeries && <span class="hot">{SERIES[seriesOf(post)].name}</span>}
+            <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+            {post.data.draft && <span class="hot">Draft</span>}
+          </span>
         </a>
       </li>
     ))
@@ -30,24 +34,24 @@ const { posts, showSeries = false } = Astro.props;
 </ol>
 
 <style>
-  .posts { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+  .log { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule-strong); }
   li { border-bottom: 1px solid var(--rule); }
   a {
     display: grid;
-    gap: 0.3rem;
-    padding: 1.3rem 0;
+    grid-template-columns: 5.5rem 1fr auto;
+    gap: 0.4rem 1.5rem;
+    align-items: baseline;
+    padding: 1.25rem 0;
     text-decoration: none;
   }
-  .meta {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.9rem;
-    font: 0.78rem var(--font-mono);
-    color: var(--muted);
-  }
-  .series { color: var(--accent); font-weight: 600; }
-  .draft { color: var(--lab); }
-  .title { font: 600 1.3rem/1.25 var(--font-serif); }
-  a:hover .title { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  .ref { font: 600 0.85rem var(--font-mono); color: var(--accent); }
+  .body { display: grid; gap: 0.3rem; }
+  .title { font: 600 1.3rem/1.2 var(--font-display); letter-spacing: -0.015em; }
+  a:hover .title { text-decoration: underline; text-decoration-color: var(--accent); text-underline-offset: 0.2em; }
   .desc { color: var(--muted); max-width: 62ch; }
+  .meta { display: grid; gap: 0.3rem; justify-items: end; white-space: nowrap; }
+  @media (max-width: 640px) {
+    a { grid-template-columns: 1fr; }
+    .meta { justify-items: start; grid-auto-flow: column; justify-content: start; gap: 1rem; }
+  }
 </style>

@@ -28,23 +28,28 @@ const next = inSeries[i + 1];
 <Base title={title} description={description} series={series.id}>
   <article class="prose-wrap">
     <header class="post-head">
-      <p class="eyebrow">
-        <a href={`/${series.id}/`}>{series.name}</a>
-        {episode !== undefined && <> · Episode {String(episode).padStart(2, '0')}</>}
-      </p>
+      <p class="label"><a href={`/${series.id}/`}>{series.name}</a></p>
       <h1>{title}</h1>
       <p class="lede">{description}</p>
-      <p class="meta">
-        <time datetime={date.toISOString()}>{formatDate(date)}</time>
-        {
-          repoTag && series.repo && (
-            <>
-              {' · '}
-              <a href={`${SITE.github}${series.repo}/tree/${repoTag}`}>Code at {repoTag}</a>
-            </>
-          )
-        }
-      </p>
+      <dl class="titleblock">
+        <div><dt class="label">Ref</dt><dd>{episode !== undefined ? `EP-${String(episode).padStart(2, '0')}` : '—'}</dd></div>
+        <div><dt class="label">Date</dt><dd><time datetime={date.toISOString()}>{formatDate(date)}</time></dd></div>
+        <div><dt class="label">Module</dt><dd>{series.name}</dd></div>
+        <div>
+          <dt class="label">Source</dt>
+          <dd>
+            {
+              repoTag && series.repo ? (
+                <a href={`${SITE.github}${series.repo}/tree/${repoTag}`}>{repoTag}</a>
+              ) : series.repo ? (
+                <a href={`${SITE.github}${series.repo}`}>{series.repo}</a>
+              ) : (
+                '—'
+              )
+            }
+          </dd>
+        </div>
+      </dl>
     </header>
 
     {youtube && <YouTube id={youtube} title={title} />}
@@ -54,25 +59,40 @@ const next = inSeries[i + 1];
     </div>
 
     <nav class="pager" aria-label="More in this series">
-      {prev ? <a href={urlOf(prev)}><span>← Previous</span>{prev.data.title}</a> : <span />}
-      {next && <a class="next" href={urlOf(next)}><span>Next →</span>{next.data.title}</a>}
+      {prev ? <a href={urlOf(prev)}><span class="label">← Previous</span>{prev.data.title}</a> : <span />}
+      {next && <a class="next" href={urlOf(next)}><span class="label">Next →</span>{next.data.title}</a>}
     </nav>
   </article>
 </Base>
 
 <style>
-  .post-head { padding-block: clamp(2.5rem, 7vw, 4.5rem) 1rem; }
-  .post-head .eyebrow a { text-decoration: none; }
-  .meta { font: 0.82rem var(--font-mono); color: var(--muted); }
+  .post-head { padding-block: clamp(2.5rem, 7vw, 4.5rem) 1.5rem; }
+  .post-head .label a { color: var(--accent); text-decoration: none; }
+  .titleblock {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    margin: 2rem 0 0;
+    border: 1px solid var(--rule-strong);
+    background: var(--surface);
+  }
+  .titleblock div { padding: 0.6rem 0.8rem; border-right: 1px solid var(--rule); min-width: 0; }
+  .titleblock div:last-child { border-right: 0; }
+  .titleblock dt { margin-bottom: 0.2rem; }
+  .titleblock dd { margin: 0; font: 500 0.88rem var(--font-mono); overflow-wrap: anywhere; }
+  .titleblock a { color: var(--accent); }
+  @media (max-width: 560px) {
+    .titleblock { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .titleblock div:nth-child(2) { border-right: 0; }
+    .titleblock div:nth-child(-n + 2) { border-bottom: 1px solid var(--rule); }
+  }
   .pager {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
     gap: 1rem;
     margin-top: 4rem;
-    padding-top: 2rem;
-    border-top: 1px solid var(--rule);
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--rule-strong);
   }
-  .pager a { display: grid; gap: 0.2rem; text-decoration: none; font-family: var(--font-serif); font-weight: 600; }
-  .pager span { font: 0.75rem var(--font-mono); color: var(--muted); font-weight: 400; }
+  .pager a { display: grid; gap: 0.3rem; text-decoration: none; font: 600 1.05rem var(--font-display); }
   .pager .next { text-align: right; }
 </style>

@@ -18,12 +18,13 @@ const isActive = (key: string, href: string) => Astro.props.active === key || pa
 <header class="site-header">
   <div class="wrap bar">
     <a class="brand" href="/" aria-label={`${SITE.title} home`}>
-      <svg class="mark" viewBox="0 0 28 16" width="28" height="16" aria-hidden="true">
-        <line x1="1" y1="8" x2="27" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" opacity="0.35" />
-        <line x1="1" y1="8" x2="17" y2="8" stroke="currentColor" stroke-width="2" stroke-linecap="round" />
-        <circle cx="17" cy="8" r="5" fill="var(--bg)" stroke="currentColor" stroke-width="2" />
+      <svg class="mark" viewBox="0 0 32 32" width="26" height="26" aria-hidden="true">
+        <rect x="1" y="1" width="30" height="30" fill="none" stroke="currentColor" stroke-width="2" />
+        <line x1="7" y1="16" x2="25" y2="16" stroke="currentColor" stroke-width="2" opacity="0.35" />
+        <line x1="7" y1="16" x2="18" y2="16" stroke="currentColor" stroke-width="2" />
+        <rect class="knob" x="15" y="11" width="6" height="10" fill="var(--lab)" />
       </svg>
-      <span>Pa<span class="ram">ram</span>Lab</span>
+      <span class="word">param<span class="lab">lab</span></span>
     </a>
     <nav aria-label="Main">
       {
@@ -34,8 +35,9 @@ const isActive = (key: string, href: string) => Astro.props.active === key || pa
         ))
       }
       <button class="theme" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
-        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
-          <path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1Z" />
+        <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true">
+          <circle cx="12" cy="12" r="8" fill="none" stroke="currentColor" stroke-width="2" />
+          <path d="M12 4a8 8 0 0 1 0 16Z" fill="currentColor" />
         </svg>
       </button>
     </nav>
@@ -59,64 +61,74 @@ const isActive = (key: string, href: string) => Astro.props.active === key || pa
 
 <style>
   .site-header {
-    border-bottom: 1px solid var(--rule);
     position: sticky;
     top: 0;
     z-index: 10;
-    background: color-mix(in srgb, var(--bg) 88%, transparent);
-    backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--rule);
+    background: color-mix(in srgb, var(--bg) 92%, transparent);
+    backdrop-filter: blur(6px);
   }
   .bar {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 1rem;
+    gap: 0.6rem 1.5rem;
     flex-wrap: wrap;
-    min-height: 3.6rem;
-    padding-block: 0.5rem;
+    min-height: 3.75rem;
+    padding-block: 0.6rem;
   }
   .brand {
     display: inline-flex;
     align-items: center;
-    gap: 0.55rem;
-    font: 600 1.1rem var(--font-serif);
+    gap: 0.6rem;
     text-decoration: none;
   }
-  .mark { color: var(--lab); transition: transform 0.2s ease; }
-  .brand:hover .mark circle { transform: translateX(6px); }
-  .mark circle { transition: transform 0.25s ease; }
-  .ram { font-style: italic; }
+  .word {
+    font: 700 1.2rem/1 var(--font-display);
+    letter-spacing: -0.03em;
+  }
+  .word .lab { color: var(--lab); }
+  .knob { transition: transform 0.25s ease; }
+  .brand:hover .knob { transform: translateX(4px); }
   nav {
     display: flex;
     align-items: center;
-    gap: 0.2rem 1.1rem;
+    gap: 0.25rem 1.4rem;
     flex-wrap: wrap;
-    font-size: 0.92rem;
+    font: 500 0.74rem var(--font-mono);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
   }
   nav a {
-    text-decoration: none;
+    position: relative;
+    padding-block: 0.3rem;
     color: var(--muted);
-    padding-block: 0.2rem;
-    border-bottom: 2px solid transparent;
+    text-decoration: none;
   }
   nav a:hover,
-  nav a[aria-current='page'] {
-    color: var(--ink);
+  nav a[aria-current='page'] { color: var(--ink); }
+  nav a[aria-current='page']::before {
+    content: '';
+    position: absolute;
+    left: -0.65rem;
+    top: 50%;
+    width: 5px;
+    height: 5px;
+    margin-top: -2.5px;
+    background: var(--ink);
   }
-  nav a[data-key='lab'][aria-current='page'] { border-color: var(--lab); }
-  nav a[data-key='explore'][aria-current='page'] { border-color: var(--explore); }
-  nav a[data-key='now'][aria-current='page'],
-  nav a[data-key='about'][aria-current='page'] { border-color: var(--ink); }
+  nav a[data-key='lab'][aria-current='page']::before { background: var(--lab); }
+  nav a[data-key='explore'][aria-current='page']::before { background: var(--explore); }
   .theme {
     display: grid;
     place-items: center;
     width: 2rem;
     height: 2rem;
     border: 1px solid var(--rule);
-    border-radius: 999px;
-    background: transparent;
+    border-radius: var(--radius);
+    background: var(--surface);
     color: var(--ink);
     cursor: pointer;
   }
-  .theme:hover { background: var(--surface); }
+  .theme:hover { border-color: var(--ink); }
 </style>
