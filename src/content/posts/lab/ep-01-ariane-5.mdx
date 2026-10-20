@@ -20,8 +20,9 @@ On 4 June 1996, Ariane 5 lifted off from Kourou on its first flight. It carried 
 SRIs, that tell the rocket which way it is pointing. They were identical on purpose: if one failed, the other would
 take over.
 
-At 36.7 seconds after main engine ignition, the backup failed. A twentieth of a second later, the active one failed
-too, for exactly the same reason. At 39 seconds the rocket was breaking apart.
+At 36.7 seconds after main engine ignition, the backup hit a number too big for a 16-bit integer and shut itself down.
+In the next data cycle the active one hit the same number and shut down too. At 39 seconds the rocket was breaking
+apart.
 
 This episode rebuilds that chain as code. Everything below runs the same simulation that the
 [episode’s tests](https://github.com/sriramamuthan/postmortem-lab/tree/main/incidents/01-ariane-5) check.
