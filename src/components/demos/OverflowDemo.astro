@@ -1,0 +1,116 @@
+---
+// Ariane 5 teaser: squeeze a 64-bit float into a 16-bit signed integer and watch what happens.
+// Simplified on purpose; the full episode simulates the real flight software.
+---
+
+<overflow-demo class="demo">
+  <div class="head">
+    <span class="eyebrow">Interactive · Ariane 5, 1996</span>
+    <span class="hint">Drag the slider</span>
+  </div>
+
+  <label class="control">
+    <span>Horizontal bias value (64-bit float)</span>
+    <input type="range" min="0" max="60000" step="1" value="20000" />
+  </label>
+
+  <div class="readout">
+    <div>
+      <span class="k">float64</span>
+      <span class="v" data-float></span>
+    </div>
+    <div>
+      <span class="k">int16 limit</span>
+      <span class="v">32,767</span>
+    </div>
+  </div>
+
+  <div class="bits" data-bits aria-label="16-bit register"></div>
+
+  <p class="status" data-status role="status" aria-live="polite"></p>
+</overflow-demo>
+
+<script>
+  const INT16_MAX = 32767;
+
+  class OverflowDemo extends HTMLElement {
+    connectedCallback() {
+      const input = this.querySelector('input')!;
+      const floatEl = this.querySelector<HTMLElement>('[data-float]')!;
+      const bitsEl = this.querySelector<HTMLElement>('[data-bits]')!;
+      const statusEl = this.querySelector<HTMLElement>('[data-status]')!;
+
+      bitsEl.replaceChildren(
+        ...Array.from({ length: 16 }, () => document.createElement('span')),
+      );
+
+      const render = () => {
+        const value = Number(input.value) + 0.37; // a real reading is never a clean integer
+        const overflow = value > INT16_MAX;
+        // What a wrapping conversion would leave in the register (C-style), for the bit display.
+        const wrapped = ((Math.trunc(value) + 32768) % 65536) - 32768;
+        const bits = (wrapped & 0xffff).toString(2).padStart(16, '0');
+
+        floatEl.textContent = value.toLocaleString('en-US', { maximumFractionDigits: 2 });
+        [...bitsEl.children].forEach((b, i) => {
+          b.textContent = bits[i];
+          b.classList.toggle('on', bits[i] === '1');
+        });
+        this.toggleAttribute('data-failed', overflow);
+        statusEl.textContent = overflow
+          ? `Operand Error. ${value.toFixed(0)} does not fit in 16 bits. The guidance computer shuts down, the backup already did the same, and the rocket breaks apart 37 seconds after launch.`
+          : `Fits. int16 = ${Math.trunc(value).toLocaleString('en-US')}. This is the range Ariane 4 flew in, so the code was never tested beyond it.`;
+      };
+
+      input.addEventListener('input', render);
+      render();
+    }
+  }
+  customElements.define('overflow-demo', OverflowDemo);
+</script>
+
+<style>
+  overflow-demo {
+    display: block;
+    margin: 2rem 0;
+    padding: 1.25rem;
+    border: 1px solid var(--rule);
+    border-radius: var(--radius);
+    background: var(--surface);
+    --state: #2f9e44;
+  }
+  overflow-demo[data-failed] { --state: var(--lab); }
+  .head { display: flex; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .eyebrow { color: var(--lab); }
+  .hint { font: 0.78rem var(--font-mono); color: var(--muted); }
+  .control { display: grid; gap: 0.4rem; margin: 1rem 0; font-size: 0.92rem; }
+  input[type='range'] { width: 100%; accent-color: var(--state); }
+  .readout { display: flex; flex-wrap: wrap; gap: 0.5rem 2.5rem; }
+  .k { display: block; font: 0.72rem var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+  .v { font: 600 1.5rem var(--font-mono); font-variant-numeric: tabular-nums; }
+  .bits {
+    display: grid;
+    grid-template-columns: repeat(16, minmax(0, 1fr));
+    gap: 3px;
+    margin: 1.2rem 0 0.8rem;
+  }
+  .bits :global(span) {
+    display: grid;
+    place-items: center;
+    aspect-ratio: 1;
+    min-width: 0;
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    font: 0.8rem var(--font-mono);
+    color: var(--muted);
+    background: var(--bg);
+  }
+  .bits :global(span.on) { background: var(--state); border-color: var(--state); color: #fff; }
+  .status {
+    margin: 0;
+    padding-left: 0.8rem;
+    border-left: 3px solid var(--state);
+    font-size: 0.95rem;
+    min-height: 3.2em;
+  }
+</style>

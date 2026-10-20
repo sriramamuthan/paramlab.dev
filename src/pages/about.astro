@@ -1,0 +1,37 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../data/site';
+---
+
+<Base title="About" description={`About ${SITE.author}.`}>
+  <article class="prose-wrap">
+    <header>
+      <p class="eyebrow">About</p>
+      <h1>Hi, I’m Sriram.</h1>
+    </header>
+    <div class="prose">
+      <p>
+        I’m a software engineer who learns best by building. This site is where I do that in public: every project is
+        open source, every episode ships working code, and every explanation is something you can run and change.
+      </p>
+      <p>
+        I build with AI as a pair programmer, mostly Claude Code, and I’m open about it. The point isn’t to look clever.
+        It’s to show how learning and building actually work now, mistakes included.
+      </p>
+      <h2>Why this exists</h2>
+      <p>
+        Most of what I learned stuck because I broke something and had to understand why. Reading about a bug teaches
+        less than causing it yourself. So everything here is built so you can cause it yourself, safely, in your browser.
+      </p>
+      <h2>Find me</h2>
+      <ul>
+        <li><a href={SITE.github}>GitHub</a></li>
+        <li><a href="/rss.xml">RSS feed</a></li>
+      </ul>
+    </div>
+  </article>
+</Base>
+
+<style>
+  header { padding-block: clamp(2.5rem, 7vw, 4.5rem) 0.5rem; }
+</style>

@@ -1,0 +1,78 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import YouTube from '../../components/YouTube.astro';
+import { SERIES, SITE } from '../../data/site';
+import { formatDate, getPosts, seriesOf, slugOf, urlOf, type Post } from '../../data/posts';
+
+export async function getStaticPaths() {
+  const posts = await getPosts();
+  return posts.map((post) => ({
+    params: { series: seriesOf(post), slug: slugOf(post) },
+    props: { post },
+  }));
+}
+
+const { post } = Astro.props as { post: Post };
+const { Content } = await render(post);
+const series = SERIES[seriesOf(post)];
+const { title, description, date, episode, youtube, repoTag } = post.data;
+
+// Previous/next within the same series, by date.
+const inSeries = (await getPosts(series.id)).reverse();
+const i = inSeries.findIndex((p) => p.id === post.id);
+const prev = inSeries[i - 1];
+const next = inSeries[i + 1];
+---
+
+<Base title={title} description={description} series={series.id}>
+  <article class="prose-wrap">
+    <header class="post-head">
+      <p class="eyebrow">
+        <a href={`/${series.id}/`}>{series.name}</a>
+        {episode !== undefined && <> · Episode {String(episode).padStart(2, '0')}</>}
+      </p>
+      <h1>{title}</h1>
+      <p class="lede">{description}</p>
+      <p class="meta">
+        <time datetime={date.toISOString()}>{formatDate(date)}</time>
+        {
+          repoTag && series.repo && (
+            <>
+              {' · '}
+              <a href={`${SITE.github}${series.repo}/tree/${repoTag}`}>Code at {repoTag}</a>
+            </>
+          )
+        }
+      </p>
+    </header>
+
+    {youtube && <YouTube id={youtube} title={title} />}
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <nav class="pager" aria-label="More in this series">
+      {prev ? <a href={urlOf(prev)}><span>← Previous</span>{prev.data.title}</a> : <span />}
+      {next && <a class="next" href={urlOf(next)}><span>Next →</span>{next.data.title}</a>}
+    </nav>
+  </article>
+</Base>
+
+<style>
+  .post-head { padding-block: clamp(2.5rem, 7vw, 4.5rem) 1rem; }
+  .post-head .eyebrow a { text-decoration: none; }
+  .meta { font: 0.82rem var(--font-mono); color: var(--muted); }
+  .pager {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr));
+    gap: 1rem;
+    margin-top: 4rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--rule);
+  }
+  .pager a { display: grid; gap: 0.2rem; text-decoration: none; font-family: var(--font-serif); font-weight: 600; }
+  .pager span { font: 0.75rem var(--font-mono); color: var(--muted); font-weight: 400; }
+  .pager .next { text-align: right; }
+</style>

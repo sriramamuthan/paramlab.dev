@@ -1,0 +1,76 @@
+---
+import Base from '../layouts/Base.astro';
+import PostList from '../components/PostList.astro';
+import { SERIES } from '../data/site';
+import { getPosts } from '../data/posts';
+
+const posts = (await getPosts()).slice(0, 6);
+const counts = {
+  lab: (await getPosts('lab')).length,
+  explore: (await getPosts('explore')).length,
+};
+---
+
+<Base>
+  <section class="wrap hero">
+    <p class="eyebrow">Building in public</p>
+    <h1>I rebuild things to understand them, then explain them with code you can play with.</h1>
+    <p class="lede">
+      Two ongoing series: famous engineering failures you can break yourself, and science and maths ideas you can poke at
+      until they click.
+    </p>
+  </section>
+
+  <section class="wrap series-grid" aria-label="Series">
+    {
+      Object.values(SERIES).map((s) => (
+        <a class="series-card" href={`/${s.id}/`} data-series={s.id}>
+          <span class="eyebrow">{counts[s.id] ? `${counts[s.id]} posts` : 'Coming soon'}</span>
+          <span class="name">{s.name}</span>
+          <span class="tagline">{s.tagline}</span>
+          <span class="desc">{s.description}</span>
+          <span class="go" aria-hidden="true">→</span>
+        </a>
+      ))
+    }
+  </section>
+
+  {
+    posts.length > 0 && (
+      <section class="wrap latest">
+        <h2>Latest</h2>
+        <PostList posts={posts} showSeries />
+      </section>
+    )
+  }
+</Base>
+
+<style>
+  .hero { padding-block: clamp(3rem, 9vw, 6.5rem) 2.5rem; }
+  .hero h1 { max-width: 22ch; }
+  .series-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr));
+    gap: 1.25rem;
+  }
+  .series-card {
+    position: relative;
+    display: grid;
+    gap: 0.45rem;
+    align-content: start;
+    padding: 1.6rem 1.6rem 2.6rem;
+    border: 1px solid var(--rule);
+    border-top: 4px solid var(--accent);
+    border-radius: var(--radius);
+    background: var(--surface);
+    text-decoration: none;
+    transition: transform 0.15s ease, border-color 0.15s ease;
+  }
+  .series-card:hover { transform: translateY(-2px); border-color: var(--accent); }
+  .name { font: 600 1.7rem/1.15 var(--font-serif); }
+  .tagline { font-weight: 600; color: var(--accent); }
+  .desc { color: var(--muted); }
+  .go { position: absolute; right: 1.4rem; bottom: 1rem; font-size: 1.3rem; color: var(--accent); }
+  .latest { margin-top: 4rem; }
+  .latest h2 { margin-top: 0; }
+</style>

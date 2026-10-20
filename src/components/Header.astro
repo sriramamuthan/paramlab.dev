@@ -1,0 +1,108 @@
+---
+import { SITE, SERIES } from '../data/site';
+
+interface Props {
+  active?: string;
+}
+
+const path = Astro.url.pathname;
+const links = [
+  { href: '/lab/', label: SERIES.lab.name, key: 'lab' },
+  { href: '/explore/', label: SERIES.explore.name, key: 'explore' },
+  { href: '/now/', label: 'Now', key: 'now' },
+  { href: '/about/', label: 'About', key: 'about' },
+];
+const isActive = (key: string, href: string) => Astro.props.active === key || path.startsWith(href);
+---
+
+<header class="site-header">
+  <div class="wrap bar">
+    <a class="brand" href="/">{SITE.title}</a>
+    <nav aria-label="Main">
+      {
+        links.map((l) => (
+          <a href={l.href} data-key={l.key} aria-current={isActive(l.key, l.href) ? 'page' : undefined}>
+            {l.label}
+          </a>
+        ))
+      }
+      <button class="theme" type="button" aria-label="Toggle dark mode" title="Toggle dark mode">
+        <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true">
+          <path fill="currentColor" d="M12 3a9 9 0 1 0 9 9c0-.46-.04-.92-.1-1.36a5.39 5.39 0 0 1-4.4 2.26 5.4 5.4 0 0 1-3.14-9.8c-.44-.06-.9-.1-1.36-.1Z" />
+        </svg>
+      </button>
+    </nav>
+  </div>
+</header>
+
+<script>
+  const btn = document.querySelector<HTMLButtonElement>('.site-header .theme');
+  btn?.addEventListener('click', () => {
+    const root = document.documentElement;
+    const isDark =
+      root.dataset.theme === 'dark' ||
+      (!root.dataset.theme && matchMedia('(prefers-color-scheme: dark)').matches);
+    const next = isDark ? 'light' : 'dark';
+    root.dataset.theme = next;
+    try {
+      localStorage.setItem('theme', next);
+    } catch {}
+  });
+</script>
+
+<style>
+  .site-header {
+    border-bottom: 1px solid var(--rule);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    background: color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter: blur(8px);
+  }
+  .bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    min-height: 3.6rem;
+    padding-block: 0.5rem;
+  }
+  .brand {
+    font: 600 1.05rem var(--font-serif);
+    text-decoration: none;
+  }
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem 1.1rem;
+    flex-wrap: wrap;
+    font-size: 0.92rem;
+  }
+  nav a {
+    text-decoration: none;
+    color: var(--muted);
+    padding-block: 0.2rem;
+    border-bottom: 2px solid transparent;
+  }
+  nav a:hover,
+  nav a[aria-current='page'] {
+    color: var(--ink);
+  }
+  nav a[data-key='lab'][aria-current='page'] { border-color: var(--lab); }
+  nav a[data-key='explore'][aria-current='page'] { border-color: var(--explore); }
+  nav a[data-key='now'][aria-current='page'],
+  nav a[data-key='about'][aria-current='page'] { border-color: var(--ink); }
+  .theme {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border: 1px solid var(--rule);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .theme:hover { background: var(--surface); }
+</style>

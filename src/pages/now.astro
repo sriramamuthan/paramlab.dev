@@ -1,0 +1,26 @@
+---
+import Base from '../layouts/Base.astro';
+
+// Update this whenever focus shifts. https://nownownow.com/about
+const updated = new Date('2026-10-20');
+---
+
+<Base title="Now" description="What I'm working on right now.">
+  <article class="prose-wrap">
+    <header>
+      <p class="eyebrow">Now · updated {updated.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>
+      <h1>What I’m doing now</h1>
+    </header>
+    <div class="prose">
+      <ul>
+        <li><strong>Launching this site</strong> and the first series, <a href="/lab/">Post-Mortem Lab</a>.</li>
+        <li><strong>Building episode 1:</strong> the Ariane 5 explosion, a 64-bit number squeezed into 16 bits.</li>
+        <li><strong>Planning <a href="/explore/">Show Me Why</a></strong>: science and maths explained visually with code.</li>
+      </ul>
+    </div>
+  </article>
+</Base>
+
+<style>
+  header { padding-block: clamp(2.5rem, 7vw, 4.5rem) 0.5rem; }
+</style>

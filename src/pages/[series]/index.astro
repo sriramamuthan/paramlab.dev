@@ -1,0 +1,46 @@
+---
+import Base from '../../layouts/Base.astro';
+import PostList from '../../components/PostList.astro';
+import { SERIES, SITE, type Series } from '../../data/site';
+import { getPosts } from '../../data/posts';
+
+export function getStaticPaths() {
+  return Object.values(SERIES).map((series) => ({ params: { series: series.id }, props: { series } }));
+}
+
+const { series } = Astro.props as { series: Series };
+const posts = await getPosts(series.id);
+---
+
+<Base title={series.name} description={series.description} series={series.id}>
+  <section class="wrap intro">
+    <p class="eyebrow">Series</p>
+    <h1>{series.name}</h1>
+    <p class="tagline">{series.tagline}</p>
+    <p class="lede">{series.description}</p>
+    {
+      series.repo && (
+        <p class="repo">
+          Code: <a href={`${SITE.github}${series.repo}`}>github.com/…/{series.repo}</a>
+        </p>
+      )
+    }
+  </section>
+
+  <section class="wrap">
+    {
+      posts.length > 0 ? (
+        <PostList posts={posts} />
+      ) : (
+        <p class="empty">The first episode is in the works. Subscribe to the <a href="/rss.xml">RSS feed</a> to catch it.</p>
+      )
+    }
+  </section>
+</Base>
+
+<style>
+  .intro { padding-block: clamp(2.5rem, 7vw, 5rem) 2rem; }
+  .tagline { font: 600 1.15rem var(--font-serif); color: var(--accent); margin: -0.4rem 0 0.6rem; }
+  .repo { font: 0.85rem var(--font-mono); color: var(--muted); }
+  .empty { color: var(--muted); padding: 2rem 0; border-top: 1px solid var(--rule); }
+</style>

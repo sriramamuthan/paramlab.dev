@@ -1,0 +1,53 @@
+---
+import { SERIES } from '../data/site';
+import { formatDate, seriesOf, urlOf, type Post } from '../data/posts';
+
+interface Props {
+  posts: Post[];
+  showSeries?: boolean;
+}
+
+const { posts, showSeries = false } = Astro.props;
+---
+
+<ol class="posts">
+  {
+    posts.map((post) => (
+      <li data-series={seriesOf(post)}>
+        <a href={urlOf(post)}>
+          <span class="meta">
+            {showSeries && <span class="series">{SERIES[seriesOf(post)].name}</span>}
+            {post.data.episode !== undefined && <span>Ep {String(post.data.episode).padStart(2, '0')}</span>}
+            <time datetime={post.data.date.toISOString()}>{formatDate(post.data.date)}</time>
+            {post.data.draft && <span class="draft">Draft</span>}
+          </span>
+          <span class="title">{post.data.title}</span>
+          <span class="desc">{post.data.description}</span>
+        </a>
+      </li>
+    ))
+  }
+</ol>
+
+<style>
+  .posts { list-style: none; margin: 0; padding: 0; border-top: 1px solid var(--rule); }
+  li { border-bottom: 1px solid var(--rule); }
+  a {
+    display: grid;
+    gap: 0.3rem;
+    padding: 1.3rem 0;
+    text-decoration: none;
+  }
+  .meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.9rem;
+    font: 0.78rem var(--font-mono);
+    color: var(--muted);
+  }
+  .series { color: var(--accent); font-weight: 600; }
+  .draft { color: var(--lab); }
+  .title { font: 600 1.3rem/1.25 var(--font-serif); }
+  a:hover .title { text-decoration: underline; text-decoration-thickness: 1px; text-underline-offset: 0.2em; }
+  .desc { color: var(--muted); max-width: 62ch; }
+</style>

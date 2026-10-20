@@ -1,0 +1,66 @@
+---
+title: I’m rebuilding history’s worst software bugs so you can break them yourself
+description: Introducing Post-Mortem Lab. One famous engineering failure per episode, rebuilt as a small simulation you can run, break and fix.
+date: 2026-10-20
+episode: 0
+tags: [post-mortem-lab, announcement]
+---
+
+import OverflowDemo from '../../../components/demos/OverflowDemo.astro';
+import Callout from '../../../components/Callout.astro';
+
+On 4 June 1996, Europe’s new Ariane 5 rocket lifted off on its first flight. About 37 seconds later it was in pieces,
+along with roughly $370 million of rocket and satellites.
+
+The cause wasn’t an engine or a weld. It was one line of code that converted a number into a box too small to hold it.
+
+You can do it yourself, right now:
+
+<OverflowDemo />
+
+Move the slider past 32,767 and you’ve recreated the failure. That’s the whole idea of this series.
+
+## What Post-Mortem Lab is
+
+Every episode takes one real engineering failure and rebuilds it as a small, faithful simulation you can run in your
+browser. You get to:
+
+1. **Hear the story.** What happened, who was affected, and why smart people missed it.
+2. **Trigger the bug.** Not a diagram of it. The actual mechanism, running.
+3. **Fix it.** And see why the fix works, with tests that prove it.
+4. **Keep the lesson.** One idea you’ll recognise next time it shows up in your own code.
+
+All the code is open source. Every episode is a tagged release, so you can check out exactly what you saw in the video.
+
+## Season 1
+
+| Ep | Failure | Year | The bug in one line |
+|---|---|---|---|
+| 01 | Ariane 5 | 1996 | A 64-bit number squeezed into 16 bits |
+| 02 | Mars Climate Orbiter | 1999 | One team used pounds, the other used newtons |
+| 03 | Patriot missile, Dhahran | 1991 | A clock that drifted a third of a second |
+| 04 | Therac-25 | 1985–87 | A race condition in a radiation machine |
+| 05 | Knight Capital | 2012 | An old feature flag, reused, cost $440M in 45 minutes |
+| 06 | Cloudflare outage | 2019 | One regular expression took down a global network |
+| 07 | CrowdStrike | 2024 | A config file that crashed 8.5 million computers |
+| 08 | Your pick | — | Vote in the comments |
+
+<Callout type="note" title="A note on respect">
+Some of these failures cost lives. We rebuild them to learn from them, never to make light of them. Each episode
+credits the investigations and engineers whose work made the lessons possible.
+</Callout>
+
+## How it’s built
+
+Everything sits on a shared toolkit that grows with every episode: checked number conversions, fault injection,
+deterministic timing, unit-aware maths. By the end of the season it will be a small library for *safely causing
+failures*, useful well beyond these episodes.
+
+I build it with AI as my pair programmer (mostly Claude Code), and I’ll show that honestly, including the parts where it
+gets things wrong.
+
+<Callout type="try">
+Follow along on GitHub, or subscribe to the [RSS feed](/rss.xml). Episode 1 rebuilds Ariane 5’s flight software in
+full: the alignment code that wasn’t even needed after launch, the backup computer that failed 72 milliseconds earlier
+with the same error, and the one-line protection that was left out to save processor time.
+</Callout>
