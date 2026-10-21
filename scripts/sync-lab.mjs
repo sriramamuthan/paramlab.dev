@@ -7,7 +7,9 @@ const OUT = new URL('../src/lab/', import.meta.url);
 const FILES = {
   'numeric.ts': 'packages/toolkit/src/numeric.ts',
   'redundancy.ts': 'packages/toolkit/src/redundancy.ts',
+  'units.ts': 'packages/toolkit/src/units.ts',
   'ariane-5.ts': 'incidents/01-ariane-5/src/flight.ts',
+  'mars-climate-orbiter.ts': 'incidents/02-mars-climate-orbiter/src/cruise.ts',
 };
 
 for (const [name, from] of Object.entries(FILES)) {
@@ -19,6 +21,6 @@ for (const [name, from] of Object.entries(FILES)) {
 }
 writeFileSync(
   new URL('toolkit.ts', OUT),
-  "// Copied toolkit entry point; see scripts/sync-lab.mjs.\nexport * from './numeric.ts';\nexport * from './redundancy.ts';\n",
+  "// Copied toolkit entry point; see scripts/sync-lab.mjs.\nexport * from './numeric.ts';\nexport * from './redundancy.ts';\nexport * from './units.ts';\n",
 );
 console.log(`Synced ${Object.keys(FILES).length} files into src/lab/`);

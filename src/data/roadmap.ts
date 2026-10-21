@@ -15,8 +15,8 @@ export const ROADMAP: Record<SeriesId, RoadmapItem[]> = {
   lab: [
     { ref: 'EP-00', title: 'Launch', hook: 'Why rebuild disasters at all', status: 'published', href: '/lab/ep-00-break-it-yourself/' },
     { ref: 'EP-01', title: 'Ariane 5', year: '1996', hook: 'Two computers, one bug, 39 seconds', status: 'published', href: '/lab/ep-01-ariane-5/' },
-    { ref: 'EP-02', title: 'Mars Climate Orbiter', year: '1999', hook: 'Pounds on one side, newtons on the other', status: 'in-progress' },
-    { ref: 'EP-03', title: 'Patriot missile, Dhahran', year: '1991', hook: 'A clock that drifted a third of a second', status: 'planned' },
+    { ref: 'EP-02', title: 'Mars Climate Orbiter', year: '1999', hook: 'Pounds on one side, newtons on the other', status: 'published', href: '/lab/ep-02-mars-climate-orbiter/' },
+    { ref: 'EP-03', title: 'Patriot missile, Dhahran', year: '1991', hook: 'A clock that drifted a third of a second', status: 'in-progress' },
     { ref: 'EP-04', title: 'Therac-25', year: '1985–87', hook: 'A race condition in a radiation machine', status: 'planned' },
     { ref: 'EP-05', title: 'Knight Capital', year: '2012', hook: 'A reused feature flag, $440M in 45 minutes', status: 'planned' },
     { ref: 'EP-06', title: 'Cloudflare outage', year: '2019', hook: 'One regex took down a global network', status: 'planned' },

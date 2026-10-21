@@ -1,0 +1,251 @@
+---
+// Mars Climate Orbiter: nine months of thruster pushes counted at 1/4.45 of their size.
+// Runs the lab's own simulation (src/lab/mars-climate-orbiter.ts, synced from postmortem-lab).
+---
+
+<mars-demo class="demo panel">
+  <div class="head">
+    <span class="label"><span class="tag">Fig. 03</span> Mars Climate Orbiter · 286 days to Mars</span>
+    <span class="label" data-outcome></span>
+  </div>
+
+  <div class="controls">
+    <fieldset>
+      <legend class="label">Units the ground software writes</legend>
+      <label><input type="radio" name="units" value="lbf·s" checked /> Pound-force seconds (as flown)</label>
+      <label><input type="radio" name="units" value="N·s" /> Newton-seconds (as the spec said)</label>
+    </fieldset>
+    <fieldset>
+      <legend class="label">Thruster firings</legend>
+      <label><input type="radio" name="rate" value="flown" checked /> As flown: often</label>
+      <label><input type="radio" name="rate" value="expected" /> As expected: 12× rarer</label>
+    </fieldset>
+    <fieldset>
+      <legend class="label">Fix</legend>
+      <label><input type="checkbox" name="check" /> Navigation checks the unit before using the number</label>
+    </fieldset>
+  </div>
+
+  <div class="clock">
+    <button type="button" class="run" data-run>▶ Fly</button>
+    <input type="range" min="1" max="286" value="1" step="1" aria-label="Day of the cruise" data-scrub />
+    <span class="t"><span data-date>11 Dec 1998</span><small data-day>day 1 of 286</small></span>
+  </div>
+
+  <div class="board">
+    <svg viewBox="0 0 360 200" class="approach" aria-label="Closest approach to Mars" data-svg>
+      <defs>
+        <linearGradient id="air" x1="0" y1="1" x2="0" y2="0">
+          <stop offset="0" stop-color="var(--lab)" stop-opacity="0.35" />
+          <stop offset="1" stop-color="var(--lab)" stop-opacity="0.05" />
+        </linearGradient>
+      </defs>
+      <path class="danger" data-danger />
+      <path class="mars" d="M -40 200 Q 180 104 400 200 Z" data-mars />
+      <line class="limit" x1="0" x2="360" data-limit />
+      <text class="limit-label" x="6" data-limit-label>80 km · lowest it can survive</text>
+      <path class="planned" data-planned />
+      <path class="actual" data-actual />
+      <text class="planned-label" x="354" text-anchor="end" data-planned-label>navigation expects 226 km</text>
+      <circle class="craft" r="4" data-craft />
+    </svg>
+
+    <dl class="readout">
+      <div><dt class="label">Navigation expects</dt><dd>226 km</dd></div>
+      <div><dt class="label">Really heading for</dt><dd data-actual-km>226 km</dd></div>
+      <div><dt class="label">Thruster pushes so far</dt><dd data-firings>0</dd></div>
+      <div><dt class="label">Each push counted at</dt><dd data-counted>full size</dd></div>
+    </dl>
+  </div>
+
+  <ol class="log" data-log aria-live="polite"></ol>
+</mars-demo>
+
+<script>
+  import {
+    CRUISE_DAYS,
+    FIRINGS_PER_DAY_AS_FLOWN,
+    FIRINGS_PER_DAY_EXPECTED,
+    PLANNED_ALTITUDE,
+    SURVIVABLE_ALTITUDE,
+    cruise,
+    type CruiseResult,
+  } from '../../lab/mars-climate-orbiter.ts';
+  import type { ImpulseUnit } from '../../lab/toolkit.ts';
+
+  const LAUNCH = Date.UTC(1998, 11, 11);
+  const dateOf = (day: number) =>
+    new Date(LAUNCH + day * 86400000).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', timeZone: 'UTC' });
+  // Altitude (km) to SVG y: the surface sits at y = 152, 1 km = 0.5 px (exaggerated so the gap is visible).
+  const SURFACE = 152;
+  const y = (km: number) => SURFACE - km * 0.5;
+  const pass = (km: number) => `M 0 6 Q 180 ${2 * y(km) - 6} 360 6`;
+
+  // Milestones from the board's report (day 0 = launch, 11 Dec 1998; day 286 = arrival, 23 Sep 1999).
+  const MILESTONES: [number, string][] = [
+    [0, 'Launch. The ground software starts writing each thruster push into a file for navigation.'],
+    [111, 'Navigators start using the files and soon see the pushes look too small. Raised only informally.'],
+    [278, 'The last planned correction aims for a closest approach of 226 km.'],
+  ];
+
+  class MarsDemo extends HTMLElement {
+    connectedCallback() {
+      const $ = <T extends Element>(sel: string) => this.querySelector<T>(sel)!;
+      const scrub = $<HTMLInputElement>('[data-scrub]');
+      const run = $<HTMLButtonElement>('[data-run]');
+      const log = $<HTMLOListElement>('[data-log]');
+      $('[data-planned]').setAttribute('d', pass(PLANNED_ALTITUDE));
+      $('[data-planned-label]').setAttribute('y', String(y(PLANNED_ALTITUDE) - 6));
+      $('[data-limit]').setAttribute('y1', String(y(SURVIVABLE_ALTITUDE)));
+      $('[data-limit]').setAttribute('y2', String(y(SURVIVABLE_ALTITUDE)));
+      $('[data-limit-label]').setAttribute('y', String(y(SURVIVABLE_ALTITUDE) - 4));
+      $('[data-danger]').setAttribute('d', `M 0 ${y(SURVIVABLE_ALTITUDE)} H 360 V 200 H 0 Z`);
+      let result: CruiseResult;
+      let timer = 0;
+      let checking = false;
+
+      const simulate = () => {
+        const fileUnits = $<HTMLInputElement>('[name=units]:checked').value as ImpulseUnit;
+        const expected = $<HTMLInputElement>('[name=rate]:checked').value === 'expected';
+        checking = $<HTMLInputElement>('[name=check]').checked;
+        result = cruise({ fileUnits, firingsPerDay: expected ? FIRINGS_PER_DAY_EXPECTED : FIRINGS_PER_DAY_AS_FLOWN, checkUnits: checking });
+        draw();
+      };
+
+      const draw = () => {
+        const day = Number(scrub.value);
+        const d = result.days[day - 1]!;
+        const km = Math.round(d.actualAltitude);
+        const arrived = day >= CRUISE_DAYS;
+        const lost = arrived && result.outcome === 'lost';
+
+        $('[data-actual]').setAttribute('d', pass(Math.max(d.actualAltitude, -20)));
+        const craft = $<SVGCircleElement>('[data-craft]');
+        craft.setAttribute('cx', String(arrived ? 180 : 10 + (day / CRUISE_DAYS) * 160));
+        // Position on the real path: the Bezier's y at that x (t = x / 360).
+        const t = Number(craft.getAttribute('cx')) / 360;
+        craft.setAttribute('cy', String((1 - t) * (1 - t) * 6 + 2 * (1 - t) * t * (2 * y(Math.max(d.actualAltitude, -20)) - 6) + t * t * 6));
+
+        this.toggleAttribute('data-low', d.actualAltitude < SURVIVABLE_ALTITUDE);
+        this.toggleAttribute('data-lost', lost);
+        $('[data-date]').textContent = dateOf(day);
+        $('[data-day]').textContent = `day ${day} of ${CRUISE_DAYS}`;
+        $('[data-actual-km]').textContent = `${km} km`;
+        $('[data-firings]').textContent = String(d.firings);
+        $('[data-counted]').textContent = d.trueImpulse > 0 ? (d.countedImpulse / d.trueImpulse < 0.99 ? '1/4.45 of real size' : 'full size') : '—';
+        $('[data-outcome]').textContent = !arrived ? '● Cruising' : lost ? '■ Lost at Mars' : '● In orbit';
+
+        const lines: [number, string][] = MILESTONES.filter(([at]) => at <= day);
+        if (checking && result.unitErrorCaught) {
+          lines.splice(1, 0, [Number(/^Day (\d+)/.exec(result.unitErrorCaught)?.[1] ?? 1), `${result.unitErrorCaught.replace(/^Day \d+: /, '')}. Navigation converts it and carries on.`]);
+        }
+        if (arrived) {
+          lines.push([CRUISE_DAYS, lost
+            ? `Orbit insertion. Closest approach about ${km} km, below the ${SURVIVABLE_ALTITUDE} km limit. Signal lost and never regained.`
+            : `Orbit insertion at about ${km} km. Safe in orbit.`]);
+        }
+        log.replaceChildren(...lines.slice(-4).map(([at, text]) => {
+          const li = document.createElement('li');
+          li.innerHTML = `<span>${dateOf(at)}</span> `;
+          li.append(text);
+          return li;
+        }));
+      };
+
+      const stop = () => {
+        cancelAnimationFrame(timer);
+        timer = 0;
+        run.textContent = '▶ Fly';
+      };
+
+      run.addEventListener('click', () => {
+        if (timer) return stop();
+        if (Number(scrub.value) >= CRUISE_DAYS) scrub.value = '1';
+        run.textContent = '■ Stop';
+        let last = performance.now();
+        let pos = Number(scrub.value);
+        const tick = (now: number) => {
+          pos = Math.min(CRUISE_DAYS, pos + ((now - last) / 10000) * CRUISE_DAYS); // the cruise in 10 s
+          last = now;
+          scrub.value = String(Math.round(pos));
+          draw();
+          if (pos >= CRUISE_DAYS) return stop();
+          timer = requestAnimationFrame(tick);
+        };
+        timer = requestAnimationFrame(tick);
+      });
+      scrub.addEventListener('input', () => {
+        stop();
+        draw();
+      });
+      this.querySelectorAll('input:not([data-scrub])').forEach((i) => i.addEventListener('change', () => {
+        stop();
+        simulate();
+      }));
+      simulate();
+    }
+  }
+  customElements.define('mars-demo', MarsDemo);
+</script>
+
+<style>
+  mars-demo { display: block; margin: 2rem 0; padding: 1.1rem 1.2rem 1.2rem; --state: var(--explore); }
+  mars-demo[data-low] { --state: var(--lab); }
+  mars-demo[data-lost] { border-color: color-mix(in srgb, var(--lab) 50%, var(--rule)); }
+  .head { display: flex; justify-content: space-between; gap: 0.5rem 1rem; flex-wrap: wrap; }
+  .head [data-outcome] { color: var(--state); }
+  .tag { color: var(--lab); margin-right: 0.4rem; }
+  .controls { display: flex; flex-wrap: wrap; gap: 0.8rem 2rem; margin: 1rem 0; }
+  fieldset { border: 0; margin: 0; padding: 0; display: grid; gap: 0.3rem; align-content: start; }
+  legend { padding: 0; margin-bottom: 0.3rem; }
+  fieldset label { font-size: 0.92rem; display: flex; gap: 0.45rem; align-items: center; }
+  input[type='radio'], input[type='checkbox'] { accent-color: var(--ink); }
+
+  .clock { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+  .run {
+    padding: 0.5rem 0.9rem;
+    font: 500 0.74rem var(--font-mono);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--bg);
+    border: 0;
+    cursor: pointer;
+  }
+  .run:hover { background: var(--lab); color: #fff; }
+  .clock input { flex: 1; min-width: 8rem; accent-color: var(--state); }
+  .t { font: 600 1rem var(--font-mono); display: grid; text-align: right; min-width: 7.5em; }
+  .t small { font: 500 0.66rem var(--font-mono); color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .board { display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); gap: 1rem; margin: 1rem 0 0.8rem; align-items: center; }
+  @media (max-width: 640px) { .board { grid-template-columns: 1fr; } }
+  .approach { width: 100%; height: auto; border: 1px solid var(--rule); background: var(--bg); }
+  .mars { fill: color-mix(in srgb, #c1440e 55%, var(--panel)); }
+  .danger { fill: url(#air); }
+  .limit { stroke: var(--lab); stroke-dasharray: 4 4; }
+  .limit-label, .planned-label { font: 500 8.5px var(--font-mono); }
+  .limit-label { fill: var(--lab); }
+  .planned-label { fill: var(--muted); }
+  .planned { fill: none; stroke: var(--muted); stroke-dasharray: 5 4; stroke-width: 1.5; }
+  .actual { fill: none; stroke: var(--state); stroke-width: 2.5; }
+  .craft { fill: var(--ink); }
+
+  .readout { margin: 0; display: grid; gap: 0.6rem; }
+  .readout div { padding: 0.45rem 0.6rem; border: 1px solid var(--rule); background: var(--surface); }
+  .readout dd { margin: 0.15rem 0 0; font: 600 1.15rem var(--font-mono); font-variant-numeric: tabular-nums; }
+  .readout [data-actual-km] { color: var(--state); }
+
+  .log {
+    list-style: none;
+    margin: 0;
+    padding: 0.6rem 0.8rem;
+    border-left: 3px solid var(--state);
+    background: var(--bg);
+    font-size: 0.88rem;
+    min-height: 6.5em;
+    display: grid;
+    align-content: start;
+    gap: 0.25rem;
+  }
+  .log :global(span) { font: 500 0.75rem var(--font-mono); color: var(--muted); }
+</style>

@@ -1,0 +1,93 @@
+---
+title: "Mars Climate Orbiter: lost in translation between two units"
+description: One program wrote pounds, the next read newtons. Nine months of tiny pushes, each counted at a quarter of its size, flew a NASA spacecraft into Mars. Fly the cruise yourself.
+date: 2026-10-21
+episode: 2
+repoTag: ep-02
+video: /video/ep-02.mp4
+poster: /video/ep-02-poster.jpg
+tags: [post-mortem-lab, mars-climate-orbiter, units, interfaces]
+reading:
+  - { kind: report, title: "Mars Climate Orbiter Mishap Investigation Board: Phase I Report", source: "NASA, 1999", url: "https://llis.nasa.gov/llis_lib/pdf/1009464main1_0641-mr.pdf" }
+  - { kind: article, title: "Mars Climate Orbiter Failure Board Releases Report (press release)", source: "NASA, 10 Nov 1999", url: "https://nssdc.gsfc.nasa.gov/planetary/text/mco_pr_19991110.txt" }
+  - { kind: video, title: "When NASA Lost a Spacecraft Because It Didn't Use Metric", source: "Scientific American (YouTube)", url: "https://www.youtube.com/watch?v=urcQAKKAAl0" }
+  - { kind: video, title: "Learning from the $125 Million Mars Climate Orbiter Mistake", source: "Filip Van Laenen · ACCU 2019 (YouTube)", url: "https://www.youtube.com/watch?v=QJ5LVsxLrZs" }
+---
+
+import MarsDemo from '../../../components/demos/MarsDemo.astro';
+import Callout from '../../../components/Callout.astro';
+
+On 23 September 1999, after nine and a half months in space, NASA’s Mars Climate Orbiter fired its engine to slip into
+orbit around Mars. It went behind the planet 49 seconds earlier than expected and was never heard from again.
+
+Navigation had aimed for a closest approach of 226 km above the surface. The spacecraft actually came in at about
+57 km, too deep in the atmosphere to survive. The reason was one number, written in one unit and read in another.
+
+<Callout type="note" title="Four terms you need">
+
+- **Impulse.** How hard and how long something pushes: force × time. A small thruster firing gives the spacecraft a
+  small impulse, and that nudges its path.
+- **Newton-seconds vs pound-force seconds.** Two units for impulse. Metric uses newton-seconds (N·s); the US
+  customary unit is the pound-force second (lbf·s). One lbf·s is about **4.45** N·s.
+- **Momentum dumps.** The spacecraft steadied itself with spinning wheels. Sunlight slowly spun them up, so every so
+  often small thrusters fired to unload them. The report calls these *angular momentum desaturations*.
+- **Closest approach.** The lowest point of the spacecraft’s pass over Mars (the report says *periapsis*). Below about
+  80 km, the atmosphere would destroy it.
+
+</Callout>
+
+## Fly it
+
+Press **Fly**. The dashed line is where navigation believed the spacecraft was heading. The solid line is where it was
+really heading. Watch the gap grow, push by push. Then try newton-seconds, rarer firings, or the unit check.
+
+<MarsDemo />
+
+## What happened
+
+Every step comes from the board’s report.
+
+1. **Two teams, one file.** Each time the thrusters fired, ground software called SM_FORCES wrote the size of the push
+   into a file. The navigation team read that file to keep track of the spacecraft’s path.
+2. **The file had the wrong unit.** The written agreement between the two programs, the *interface specification*,
+   said newton-seconds. SM_FORCES wrote pound-force seconds.
+3. **The reader assumed.** Navigation used the numbers as newton-seconds, exactly as the specification promised. So
+   every push was counted at 1/4.45 of its real size. The spacecraft’s own software used the right units; only this
+   ground program was wrong.
+4. **More pushes than planned.** The solar panel stuck out on one side, so sunlight spun the wheels up faster and the
+   thrusters fired 10 to 14 times more often than navigation expected. Each firing added a little unseen error.
+5. **Hard to see from Earth.** The pushes were mostly sideways to the line between Earth and the spacecraft, and radio
+   tracking mostly measures motion along that line. So the error stayed hidden.
+6. **Warnings, but no action.** From April 1999, navigators noticed the pushes looked too small, but it was only raised
+   informally. In the last week, estimates of the closest approach dropped from 226 km to 150–170 km, then to 110 km
+   an hour before arrival. An emergency correction was discussed but never made.
+
+<Callout type="lesson">
+Numbers crossing from one program to another need their unit attached and checked. A specification that says
+“newton-seconds” doesn’t make the data newton-seconds.
+</Callout>
+
+## Fix it
+
+| Fix | What changes |
+|---|---|
+| Write newton-seconds, as the specification said | Navigation counts every push at full size; the spacecraft arrives at 226 km |
+| Navigation checks the unit before using a number | The very first file is flagged, converted, and the mistake is found on day two |
+
+The second fix is the one that scales: it doesn’t rely on every writer getting it right. In the lab’s toolkit it’s a
+few lines: every impulse carries its unit, and `expectUnit` refuses one it wasn’t promised.
+
+Try one more thing in the demo: keep the wrong units, but make the firings as rare as expected. The spacecraft
+survives. The bug was there from launch; how often the code ran decided whether it was fatal.
+
+## What I simplified
+
+The board’s report gives the factor, the dates and the altitudes, but not the size of each push or the exact number
+of firings. This simulation uses illustrative values for both and assumes lost altitude grows with the total
+uncounted push, calibrated so the as-flown run arrives at 57 km. “As expected” firings are 12× rarer, inside the
+report’s 10–14×.
+
+<Callout type="try">
+Run it locally: `git clone` the repo, `git checkout ep-02`, `npm install`, `npm test`. Then break something: make
+`expectUnit` accept any unit and watch the test fail.
+</Callout>
